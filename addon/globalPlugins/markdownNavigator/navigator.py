@@ -25,12 +25,6 @@ from _ctypes import COMError
 from NVDAObjects.IAccessible import IA2TextTextInfo
 
 from .document import FastDocumentManager
-from .legacy import (
-	navigate_legacy,
-	navigate_block_legacy,
-	navigate_code_legacy,
-	navigate_table_legacy,
-)
 
 addonHandler.initTranslation()
 
@@ -111,6 +105,8 @@ class MarkdownEditorOverlay(ScriptableObject):
 				self._navigateFast(fdm, regex, direction, name, focus_element, notFoundMessage)
 		except (RuntimeError, NotImplementedError, LookupError, COMError) as e:
 			log.debugWarning(f"MarkdownNavigator: FastDocumentManager failed ({e}), falling back to legacy")
+			from .legacy import navigate_legacy
+
 			navigate_legacy(self, gesture, regex, direction, name, focus_element, notFoundMessage)
 
 	def _navigateFast(
@@ -262,6 +258,8 @@ class MarkdownEditorOverlay(ScriptableObject):
 				self._navigateBlockFast(fdm, regex, direction, name, notFoundMessage)
 		except (RuntimeError, NotImplementedError, LookupError, COMError) as e:
 			log.debugWarning(f"MarkdownNavigator: FastDocumentManager failed for block nav ({e})")
+			from .legacy import navigate_block_legacy
+
 			navigate_block_legacy(self, gesture, regex, direction, name, notFoundMessage)
 
 	def _navigateBlockFast(
@@ -332,6 +330,8 @@ class MarkdownEditorOverlay(ScriptableObject):
 			log.debugWarning(
 				f"MarkdownNavigator: FastDocumentManager failed for code nav ({e}), falling back",
 			)
+			from .legacy import navigate_code_legacy
+
 			navigate_code_legacy(self, gesture, direction, name, notFoundMessage)
 
 	def _navigateCodeFast(self, fdm, direction, name, notFoundMessage):
@@ -532,6 +532,8 @@ class MarkdownEditorOverlay(ScriptableObject):
 			log.debugWarning(
 				f"MarkdownNavigator: FastDocumentManager failed for table nav ({e}), falling back to legacy",
 			)
+			from .legacy import navigate_table_legacy
+
 			navigate_table_legacy(self, gesture, row_dir, col_dir)
 
 	def _navigateTableFast(self, fdm, row_dir, col_dir):
