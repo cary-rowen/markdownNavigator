@@ -1,0 +1,347 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the 'markdownNavigator' package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: nvda\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-01-23 06:44+0000\n"
+"PO-Revision-Date: 2026-02-08 00:30+0800\n"
+"Last-Translator: \n"
+"Language-Team: Chinese Simplified\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: nvda\n"
+"X-Crowdin-Project-ID: 598017\n"
+"X-Crowdin-Language: zh-CN\n"
+"X-Crowdin-File: nvda.pot\n"
+"X-Crowdin-File-ID: 2\n"
+"X-Generator: Poedit 3.8\n"
+
+#: addon\globalPlugins\markdownNavigator\legacy.py:164
+#: addon\globalPlugins\markdownNavigator\legacy.py:180
+#: addon\globalPlugins\markdownNavigator\legacy.py:248
+#: addon\globalPlugins\markdownNavigator\legacy.py:342
+#: addon\globalPlugins\markdownNavigator\navigator.py:217
+#: addon\globalPlugins\markdownNavigator\navigator.py:229
+#: addon\globalPlugins\markdownNavigator\navigator.py:293
+#: addon\globalPlugins\markdownNavigator\navigator.py:447
+#, python-format
+msgid "no next %s found"
+msgstr "往下没有 %s"
+
+#: addon\globalPlugins\markdownNavigator\legacy.py:164
+#: addon\globalPlugins\markdownNavigator\legacy.py:180
+#: addon\globalPlugins\markdownNavigator\legacy.py:248
+#: addon\globalPlugins\markdownNavigator\legacy.py:342
+#: addon\globalPlugins\markdownNavigator\navigator.py:217
+#: addon\globalPlugins\markdownNavigator\navigator.py:229
+#: addon\globalPlugins\markdownNavigator\navigator.py:293
+#: addon\globalPlugins\markdownNavigator\navigator.py:447
+#, python-format
+msgid "no previous %s found"
+msgstr "往上没有 %s"
+
+#: addon\globalPlugins\markdownNavigator\legacy.py:440
+#: addon\globalPlugins\markdownNavigator\legacy.py:467
+#: addon\globalPlugins\markdownNavigator\legacy.py:470
+#: addon\globalPlugins\markdownNavigator\legacy.py:474
+#: addon\globalPlugins\markdownNavigator\navigator.py:528
+#: addon\globalPlugins\markdownNavigator\navigator.py:554
+msgid "Edge of table"
+msgstr "表格边缘"
+
+#. Translators: Description for the toggle script.
+#: addon\globalPlugins\markdownNavigator\navigator.py:45
+msgid ""
+"Toggles Markdown Browse Mode. When enabled, keys like H, I, T navigate "
+"content."
+msgstr "切换 Markdown 浏览模式。开启后，可以使用 H、I、T 等按键导航内容。"
+
+#. Translators: Message when mode is enabled.
+#: addon\globalPlugins\markdownNavigator\navigator.py:59
+msgid "Markdown Browse Mode On"
+msgstr "开启 Markdown 浏览"
+
+#. Translators: Message when mode is disabled.
+#: addon\globalPlugins\markdownNavigator\navigator.py:62
+msgid "Markdown Browse Mode Off"
+msgstr "关闭 Markdown 浏览"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:498
+#: addon\globalPlugins\markdownNavigator\navigator.py:505
+msgid "Not inside a table"
+msgstr "不在表格的单元格中"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:609
+msgid "Not inside a list, table, or blockquote"
+msgstr "不在列表、表格或引用块内"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:631
+#: addon\globalPlugins\markdownNavigator\navigator.py:636
+msgid "start"
+msgstr "开始"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:631
+#: addon\globalPlugins\markdownNavigator\navigator.py:636
+msgid "end"
+msgstr "结尾"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:642
+#: addon\globalPlugins\markdownNavigator\navigator.py:644
+msgid "table"
+msgstr "表格"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:642
+msgid "no next table"
+msgstr "往下没有表格"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:644
+msgid "no previous table"
+msgstr "往上没有表格"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:648
+#: addon\globalPlugins\markdownNavigator\navigator.py:650
+msgid "link"
+msgstr "链接"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:648
+msgid "no next link"
+msgstr "往下没有链接"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:650
+msgid "no previous link"
+msgstr "往上没有链接"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:653
+#: addon\globalPlugins\markdownNavigator\navigator.py:655
+msgid "image"
+msgstr "图形"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:653
+msgid "no next graphic"
+msgstr "往下没有图形"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:655
+msgid "no previous graphic"
+msgstr "往上没有图形"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:659
+#: addon\globalPlugins\markdownNavigator\navigator.py:661
+msgid "heading"
+msgstr "标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:659
+msgid "no next heading"
+msgstr "往下没有标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:661
+msgid "no previous heading"
+msgstr "往上没有标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:664
+#: addon\globalPlugins\markdownNavigator\navigator.py:666
+msgid "list item"
+msgstr "列表项目"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:664
+msgid "no next list item"
+msgstr "往下没有列表项目"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:666
+msgid "no previous list item"
+msgstr "往上没有列表项目"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:670
+#: addon\globalPlugins\markdownNavigator\navigator.py:672
+msgid "italic"
+msgstr "斜体"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:670
+msgid "no next italic"
+msgstr "往下没有斜体"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:672
+msgid "no previous italic"
+msgstr "往上没有斜体"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:676
+#: addon\globalPlugins\markdownNavigator\navigator.py:678
+msgid "strikethrough"
+msgstr "删除线"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:676
+msgid "no next strikethrough"
+msgstr "往下没有删除线"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:678
+msgid "no previous strikethrough"
+msgstr "往上没有删除线"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:682
+#: addon\globalPlugins\markdownNavigator\navigator.py:684
+msgid "bold"
+msgstr "粗体"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:682
+msgid "no next bold"
+msgstr "往下没有粗体"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:684
+msgid "no previous bold"
+msgstr "往上没有粗体"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:688
+#: addon\globalPlugins\markdownNavigator\navigator.py:690
+msgid "footnote"
+msgstr "脚注"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:688
+msgid "no next footnote"
+msgstr "往下没有脚注"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:690
+msgid "no previous footnote"
+msgstr "往上没有脚注"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:693
+#: addon\globalPlugins\markdownNavigator\navigator.py:695
+msgid "list"
+msgstr "列表"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:693
+msgid "no next list"
+msgstr "往下没有列表"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:695
+msgid "no previous list"
+msgstr "往上没有列表"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:698
+#: addon\globalPlugins\markdownNavigator\navigator.py:700
+msgid "blockquote"
+msgstr "引用区"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:698
+msgid "no next block quote"
+msgstr "往下没有引用区"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:700
+msgid "no previous block quote"
+msgstr "往上没有引用区"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:703
+#: addon\globalPlugins\markdownNavigator\navigator.py:705
+msgid "code"
+msgstr "代码"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:703
+msgid "no next code"
+msgstr "往下没有代码"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:705
+msgid "no previous code"
+msgstr "往上没有代码"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:708
+#: addon\globalPlugins\markdownNavigator\navigator.py:710
+msgid "separator"
+msgstr "分隔符"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:708
+msgid "no next separator"
+msgstr "往下没有分隔符"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:710
+msgid "no previous separator"
+msgstr "往上没有分隔符"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:713
+#: addon\globalPlugins\markdownNavigator\navigator.py:715
+msgid "checkbox"
+msgstr "复选框"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:713
+msgid "no next check box"
+msgstr "往下没有复选框"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:715
+msgid "no previous check box"
+msgstr "往上没有复选框"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:719
+#: addon\globalPlugins\markdownNavigator\navigator.py:721
+msgid "level 1 heading"
+msgstr "1 级标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:719
+#: addon\globalPlugins\markdownNavigator\navigator.py:724
+#: addon\globalPlugins\markdownNavigator\navigator.py:729
+#: addon\globalPlugins\markdownNavigator\navigator.py:734
+#: addon\globalPlugins\markdownNavigator\navigator.py:739
+#: addon\globalPlugins\markdownNavigator\navigator.py:744
+#, python-brace-format
+msgid "No next heading at level {i}"
+msgstr "往下没有 {i} 级标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:721
+#: addon\globalPlugins\markdownNavigator\navigator.py:726
+#: addon\globalPlugins\markdownNavigator\navigator.py:731
+#: addon\globalPlugins\markdownNavigator\navigator.py:736
+#: addon\globalPlugins\markdownNavigator\navigator.py:741
+#: addon\globalPlugins\markdownNavigator\navigator.py:746
+#, python-brace-format
+msgid "No previous heading at level {i}"
+msgstr "往上没有 {i} 级标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:724
+#: addon\globalPlugins\markdownNavigator\navigator.py:726
+msgid "level 2 heading"
+msgstr "2 级标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:729
+#: addon\globalPlugins\markdownNavigator\navigator.py:731
+msgid "level 3 heading"
+msgstr "3 级标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:734
+#: addon\globalPlugins\markdownNavigator\navigator.py:736
+msgid "level 4 heading"
+msgstr "4 级标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:739
+#: addon\globalPlugins\markdownNavigator\navigator.py:741
+msgid "level 5 heading"
+msgstr "5 级标题"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:744
+#: addon\globalPlugins\markdownNavigator\navigator.py:746
+msgid "level 6 heading"
+msgstr "6 级标题"
+
+#. Add-on summary/title, usually the user visible name of the add-on
+#. Translators: Summary/title for this add-on
+#. to be shown on installation and add-on information found in add-on store
+#: buildVars.py:21
+msgid "Markdown Navigator"
+msgstr "Markdown 导航"
+
+#. Add-on description
+#. Translators: Long description to be shown for this add-on on add-on information from add-on store
+#: buildVars.py:24
+msgid ""
+"An NVDA add-on that provides structured navigation (headings, lists, tables, "
+"etc.) in editable text areas for Markdown files."
+msgstr "一个 NVDA 插件，为 Markdown 文件提供结构化导航（标题、列表、表格等）。"
+
+#. Brief changelog for this version
+#. Translators: what's new content for the add-on version to be shown in the add-on store
+#: buildVars.py:29
+msgid "Initial version."
+msgstr "初始版本。"
