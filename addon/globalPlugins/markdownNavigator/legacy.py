@@ -39,7 +39,7 @@ def _step_line(ti: textInfos.TextInfo, direction: int) -> bool:
 
 	Tries efficient UNIT_LINE movement first, then falls back to robust
 	character stepping to handle Ghost Loops in RichEdit controls.
-	
+
 	:return: True if moved successfully, False if at EOF/BOF.
 	"""
 	tiOriginal = ti.copy()
@@ -164,7 +164,11 @@ def navigate_legacy(
 				speech.speak([m.group()])
 				break
 		if not found:
-			msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			msg = (
+				notFoundMessage
+				if notFoundMessage
+				else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			)
 			ui.message(msg)
 	else:
 		tiScan = ti.copy()
@@ -180,7 +184,11 @@ def navigate_legacy(
 				speech.speakTextInfo(tiScan, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
 				break
 		if not found:
-			msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			msg = (
+				notFoundMessage
+				if notFoundMessage
+				else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			)
 			ui.message(msg)
 
 
@@ -218,7 +226,11 @@ def navigate_block_legacy(
 				target_ti.collapse()
 				target_ti.updateCaret()
 				target_ti.expand(textInfos.UNIT_LINE)
-				speech.speakTextInfo(target_ti, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+				speech.speakTextInfo(
+					target_ti,
+					unit=textInfos.UNIT_LINE,
+					reason=controlTypes.OutputReason.CARET,
+				)
 				return
 
 	tiScan = tiLine.copy()
@@ -248,7 +260,11 @@ def navigate_block_legacy(
 				speech.speakTextInfo(tiScan, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
 				break
 	if not found:
-		msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+		msg = (
+			notFoundMessage
+			if notFoundMessage
+			else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+		)
 		ui.message(msg)
 
 
@@ -342,7 +358,11 @@ def navigate_code_legacy(
 			speech.speak([m.group()])
 			break
 	if not found:
-		msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+		msg = (
+			notFoundMessage
+			if notFoundMessage
+			else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+		)
 		ui.message(msg)
 
 
@@ -351,7 +371,7 @@ def _parse_table_row(text: str) -> list[dict]:
 	cells = []
 	# Split by pipe, but keep the delimiter to calculate offsets
 	# Regex looks for | not preceded by \
-	pattern = re.compile(r'(?<!\\)\|')
+	pattern = re.compile(r"(?<!\\)\|")
 	matches = list(pattern.finditer(text))
 	if not matches:
 		return []
@@ -364,13 +384,15 @@ def _parse_table_row(text: str) -> list[dict]:
 		stripped = cell_text.strip()
 		content_start = cell_start + cell_text.find(stripped) if stripped else cell_start
 		content_end = content_start + len(stripped)
-		cells.append({
-			'start': cell_start,
-			'end': cell_end,
-			'content_start': content_start,
-			'content_end': content_end,
-			'text': stripped
-		})
+		cells.append(
+			{
+				"start": cell_start,
+				"end": cell_end,
+				"content_start": content_start,
+				"content_end": content_end,
+				"text": stripped,
+			},
+		)
 	return cells
 
 
@@ -382,9 +404,9 @@ def navigate_table_legacy(
 ) -> None:
 	"""Legacy table navigation using line-by-line scanning and IA2 text info optimization where possible."""
 	# Web special handling: Use Flat IA 2 Info
-	isWeb = getattr(obj.appModule, 'appName', '').lower() in ('chrome', 'msedge')
+	isWeb = getattr(obj.appModule, "appName", "").lower() in ("chrome", "msedge")
 	try:
-		if isWeb and hasattr(obj, 'IAccessibleTextObject'):
+		if isWeb and hasattr(obj, "IAccessibleTextObject"):
 			ti = IA2TextTextInfo(obj, textInfos.POSITION_CARET)
 		else:
 			ti = obj.makeTextInfo(textInfos.POSITION_CARET)
@@ -417,7 +439,9 @@ def navigate_table_legacy(
 		line_start_abs = tiLine._startOffset
 		caret_utf16_relative = caret_abs - line_start_abs
 		# Convert to Python Char Offset for comparison with regex results
-		caret_char_relative = line_converter.encodedToStrOffsets(caret_utf16_relative, caret_utf16_relative)[0]
+		caret_char_relative = line_converter.encodedToStrOffsets(caret_utf16_relative, caret_utf16_relative)[
+			0
+		]
 	else:
 		# Fallback logic - tiToCaret handles text length (Python Chars)
 		tiLineStart = tiLine.copy()
@@ -428,7 +452,7 @@ def navigate_table_legacy(
 
 	current_col = -1
 	for i, cell in enumerate(cells):
-		if caret_char_relative >= cell['start'] and caret_char_relative <= cell['end']:
+		if caret_char_relative >= cell["start"] and caret_char_relative <= cell["end"]:
 			current_col = i
 			break
 	if current_col == -1:
@@ -443,7 +467,7 @@ def navigate_table_legacy(
 			ui.message(_("Edge of table"))
 			return
 		target_cell = cells[target_col]
-		target_char_offset = target_cell['content_start']  # relative to line start (Python Char)
+		target_char_offset = target_cell["content_start"]  # relative to line start (Python Char)
 
 		if isWeb and isinstance(tiLine, IA2TextTextInfo):
 			# Convert to UTF-16 offset
@@ -460,7 +484,7 @@ def navigate_table_legacy(
 			tiLineStart.move(textInfos.UNIT_CHARACTER, target_char_offset)
 			tiLineStart.updateCaret()
 
-		speech.speak([target_cell['text']])
+		speech.speak([target_cell["text"]])
 		return
 
 	# 4. Vertical Move
@@ -479,7 +503,7 @@ def navigate_table_legacy(
 		if target_col >= len(new_cells):
 			target_col = len(new_cells) - 1
 		target_cell = new_cells[target_col]
-		target_char_offset = target_cell['content_start']
+		target_char_offset = target_cell["content_start"]
 
 		if isWeb and isinstance(tiScan, IA2TextTextInfo):
 			# Need converter for the NEW line -> tiScan.text
@@ -496,5 +520,5 @@ def navigate_table_legacy(
 			tiScan.move(textInfos.UNIT_CHARACTER, target_char_offset)
 			tiScan.updateCaret()
 
-		speech.speak([target_cell['text']])
+		speech.speak([target_cell["text"]])
 		return

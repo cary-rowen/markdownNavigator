@@ -52,7 +52,7 @@ class FastDocumentManager:
 
 	This class fetches the entire document text at once and supports
 	fast line-by-line navigation without repeated IPC calls.
-	
+
 	The implementation strategy is inspired by the 'FastLineManagerV2' from
 	the 'nvda-indent-nav' add-on by Tony Malykh:
 	https://github.com/mltony/nvda-indent-nav
@@ -94,7 +94,7 @@ class FastDocumentManager:
 			pyEnd = m.end()
 			chunk = self.documentText[lastPy:pyEnd]
 			# Calculate UTF-16 length
-			chunkUtf16Len = len(chunk.encode('utf-16-le')) // 2
+			chunkUtf16Len = len(chunk.encode("utf-16-le")) // 2
 			currentUtf16 += chunkUtf16Len
 
 			self.pyOffsets.append(pyEnd)
@@ -159,9 +159,10 @@ class FastDocumentManager:
 			offset = 0
 
 			# Try using textUtils to handle different encodings (e.g., Scintilla's UTF-8)
-			encoding = getattr(textInfo, 'encoding', None)
+			encoding = getattr(textInfo, "encoding", None)
 			if encoding:
 				from textUtils import getOffsetConverter
+
 				pyOffset = self.pyOffsets[lineIndex]
 				try:
 					converter = getOffsetConverter(encoding)(self.documentText)
@@ -170,7 +171,9 @@ class FastDocumentManager:
 					if isinstance(offset, tuple):
 						offset = offset[0]
 				except Exception as e:
-					log.debugWarning(f"FastDocumentManager: textUtils conversion failed ({e}), falling back to UTF-16")
+					log.debugWarning(
+						f"FastDocumentManager: textUtils conversion failed ({e}), falling back to UTF-16",
+					)
 					# Fall back to precomputed UTF-16 offsets
 					if lineIndex < len(self.utf16Offsets):
 						offset = self.utf16Offsets[lineIndex]
@@ -179,7 +182,7 @@ class FastDocumentManager:
 						lastKnownPy = self.pyOffsets[-1]
 						lastKnownUtf16 = self.utf16Offsets[-1]
 						remainingText = self.documentText[lastKnownPy:]
-						offset = lastKnownUtf16 + (len(remainingText.encode('utf-16-le')) // 2)
+						offset = lastKnownUtf16 + (len(remainingText.encode("utf-16-le")) // 2)
 			else:
 				# No specific encoding, default to Windows UTF-16
 				if lineIndex < len(self.utf16Offsets):
@@ -189,7 +192,7 @@ class FastDocumentManager:
 					lastKnownPy = self.pyOffsets[-1]
 					lastKnownUtf16 = self.utf16Offsets[-1]
 					remainingText = self.documentText[lastKnownPy:]
-					offset = lastKnownUtf16 + (len(remainingText.encode('utf-16-le')) // 2)
+					offset = lastKnownUtf16 + (len(remainingText.encode("utf-16-le")) // 2)
 
 			textInfo._startOffset = textInfo._endOffset = offset
 			textInfo.expand(textInfos.UNIT_LINE)
@@ -197,8 +200,8 @@ class FastDocumentManager:
 		else:
 			# Fallback for non-OffsetsTextInfo
 			# Check if this is a web browser environment for optimized positioning
-			appName = getattr(self.obj.appModule, 'appName', '').lower()
-			isWeb = appName in ('chrome', 'msedge', 'firefox', 'opera', 'brave', 'browser')
+			appName = getattr(self.obj.appModule, "appName", "").lower()
+			isWeb = appName in ("chrome", "msedge", "firefox", "opera", "brave", "browser")
 
 			if isWeb:
 				self.pyOffsets[lineIndex] if lineIndex < self.nLines else len(self.documentText)
@@ -207,9 +210,13 @@ class FastDocumentManager:
 				# This bypasses the Compound structure and maps directly to global UTF-16 offsets
 				try:
 					# Get precomputed UTF-16 offset
-					targetUtf16 = self.utf16Offsets[lineIndex] if lineIndex < len(self.utf16Offsets) else self.utf16Offsets[-1]
+					targetUtf16 = (
+						self.utf16Offsets[lineIndex]
+						if lineIndex < len(self.utf16Offsets)
+						else self.utf16Offsets[-1]
+					)
 
-					if hasattr(self.obj, 'IAccessibleTextObject'):
+					if hasattr(self.obj, "IAccessibleTextObject"):
 						# Create a flat IA2TextTextInfo
 						flatInfo = IA2TextTextInfo(self.obj, textInfos.POSITION_ALL)
 
@@ -225,7 +232,9 @@ class FastDocumentManager:
 
 						return flatInfo
 					else:
-						log.debugWarning("FastDocumentManager: Object missing IAccessibleTextObject, cannot use flat info")
+						log.debugWarning(
+							"FastDocumentManager: Object missing IAccessibleTextObject, cannot use flat info",
+						)
 
 				except Exception as e:
 					log.debugWarning(f"FastDocumentManager: Flat IA2TextTextInfo failed ({e}), falling back")

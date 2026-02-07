@@ -46,7 +46,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 	@script(
 		# Translators: Description for the toggle script.
 		description=_("Toggles Markdown Browse Mode. When enabled, keys like H, I, T navigate content."),
-		gesture="kb:NVDA+shift+space"
+		gesture="kb:NVDA+shift+space",
 	)
 	def script_toggleMarkdownBrowseMode(self, gesture) -> None:
 		self.markdownBrowseMode = not self.markdownBrowseMode
@@ -74,10 +74,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 			return script
 
 		# Trap non-command gestures if configured
-		if (
-			config.conf["virtualBuffers"]["trapNonCommandGestures"]
-			and gesture.isCharacter
-		):
+		if config.conf["virtualBuffers"]["trapNonCommandGestures"] and gesture.isCharacter:
 			return self.script_trapNonCommandGesture
 
 		return None
@@ -131,7 +128,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 			currentLineText = fdm.getText()
 			lineStartOffset = fdm.getLineOffset()
 			# Check if we can use Flat Injection (Web Optimization)
-			isWeb = getattr(self.appModule, 'appName', '').lower() in ('chrome', 'msedge')
+			isWeb = getattr(self.appModule, "appName", "").lower() in ("chrome", "msedge")
 
 			# Calculate caret offset within current line
 			# Note: getLineOffset returns Python string offset
@@ -142,7 +139,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 				caret_offset = docCaretPos - lineStartOffset
 			except Exception:
 				caret_offset = 0
-			
+
 			matches = list(regex.finditer(currentLineText))
 			target_match = None
 			if direction == 1:
@@ -155,22 +152,22 @@ class MarkdownEditorOverlay(ScriptableObject):
 					if m.start() < caret_offset:
 						target_match = m
 						break
-			
+
 			if target_match:
 				lineInfo = fdm.getTextInfo()
 
 				if isWeb and isinstance(lineInfo, IA2TextTextInfo):
 					# Web Optimization: Calculate Global UTF-16 Offset and Inject
-					prefix = currentLineText[:target_match.start()]
+					prefix = currentLineText[: target_match.start()]
 					converter = WideStringOffsetConverter(prefix)
 					utf16_delta = converter.encodedStringLength
-					
+
 					new_abs = lineInfo._startOffset + utf16_delta
 					match_len_utf16 = WideStringOffsetConverter(target_match.group()).encodedStringLength
-					
+
 					lineInfo._startOffset = new_abs
 					lineInfo._endOffset = new_abs + match_len_utf16
-					
+
 					# Update caret
 					lineInfo.updateCaret()
 					# Speak content
@@ -195,16 +192,16 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 					if isWeb and isinstance(lineInfo, IA2TextTextInfo):
 						# Web Optimization: Offset Injection
-						prefix = text[:m.start()]
+						prefix = text[: m.start()]
 						converter = WideStringOffsetConverter(prefix)
 						utf16_delta = converter.encodedStringLength
-						
+
 						new_abs = lineInfo._startOffset + utf16_delta
 						match_len_utf16 = WideStringOffsetConverter(m.group()).encodedStringLength
 
 						lineInfo._startOffset = new_abs
 						lineInfo._endOffset = new_abs + match_len_utf16
-						
+
 						lineInfo.updateCaret()
 						speech.speak([m.group()])
 						break
@@ -217,7 +214,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 						break
 
 			if not found:
-				msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+				msg = (
+					notFoundMessage
+					if notFoundMessage
+					else (
+						_("no next %s found") % name if direction == 1 else _("no previous %s found") % name
+					)
+				)
 				ui.message(msg)
 		else:
 			found = False
@@ -226,10 +229,20 @@ class MarkdownEditorOverlay(ScriptableObject):
 				if regex.search(text):
 					found = True
 					lineInfo = fdm.updateCaret()
-					speech.speakTextInfo(lineInfo, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+					speech.speakTextInfo(
+						lineInfo,
+						unit=textInfos.UNIT_LINE,
+						reason=controlTypes.OutputReason.CARET,
+					)
 					break
 			if not found:
-				msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+				msg = (
+					notFoundMessage
+					if notFoundMessage
+					else (
+						_("no next %s found") % name if direction == 1 else _("no previous %s found") % name
+					)
+				)
 				ui.message(msg)
 
 	def _navigateBlock(
@@ -272,9 +285,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 						break
 					startLine -= 1
 				lineInfo = fdm.updateCaret(startLine)
-				speech.speakTextInfo(lineInfo, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+				speech.speakTextInfo(
+					lineInfo,
+					unit=textInfos.UNIT_LINE,
+					reason=controlTypes.OutputReason.CARET,
+				)
 				return
-		
+
 		found = False
 		while fdm.move(direction) != 0:
 			text = fdm.getText()
@@ -290,10 +307,18 @@ class MarkdownEditorOverlay(ScriptableObject):
 							targetLine -= 1
 					found = True
 					lineInfo = fdm.updateCaret(targetLine)
-					speech.speakTextInfo(lineInfo, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+					speech.speakTextInfo(
+						lineInfo,
+						unit=textInfos.UNIT_LINE,
+						reason=controlTypes.OutputReason.CARET,
+					)
 					break
 		if not found:
-			msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			msg = (
+				notFoundMessage
+				if notFoundMessage
+				else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			)
 			ui.message(msg)
 
 	def _navigateCode(self, gesture, direction, name, notFoundMessage=None):
@@ -304,25 +329,28 @@ class MarkdownEditorOverlay(ScriptableObject):
 			with FastDocumentManager(self) as fdm:
 				self._navigateCodeFast(fdm, direction, name, notFoundMessage)
 		except (RuntimeError, NotImplementedError, LookupError, COMError) as e:
-			log.debugWarning(f"MarkdownNavigator: FastDocumentManager failed for code nav ({e}), falling back")
+			log.debugWarning(
+				f"MarkdownNavigator: FastDocumentManager failed for code nav ({e}), falling back",
+			)
 			navigate_code_legacy(self, gesture, direction, name, notFoundMessage)
 
 	def _navigateCodeFast(self, fdm, direction, name, notFoundMessage):
 		"""Implementing Code Block Navigation with FastDocumentManager"""
 		from textUtils import WideStringOffsetConverter
-		isWeb = getattr(self.appModule, 'appName', '').lower() in ('chrome', 'msedge')
+
+		isWeb = getattr(self.appModule, "appName", "").lower() in ("chrome", "msedge")
 
 		currentLineText = fdm.getText()
-		fdm.getTextInfo() # For fallback anchor
-		
+		fdm.getTextInfo()  # For fallback anchor
+
 		# Check if within code block boundary
 		on_boundary = bool(patterns.RE_CODE_BLOCK.match(currentLineText))
-		
+
 		# === 1. Inline Code Search in Current Line (if not skipping block) ===
 		# If we are already on the boundary and intend to move down, we might intend to skip a block.
 		# But if it's not a boundary, or the intention is to find inline code, search the current line first.
 		should_skip_block = False
-		
+
 		if on_boundary:
 			# Logic: If at boundary
 			# Down (1): Skip entire block (look for next closure/start)
@@ -332,11 +360,11 @@ class MarkdownEditorOverlay(ScriptableObject):
 			if direction == 1:
 				should_skip_block = True
 				log.debug("MarkdownNavigator: At parsing boundary, verifying skip intent...")
-			else: # direction == -1
-				if has_info: # Start tag
-					should_skip_block = False # Don't skip upwards from start tag
+			else:  # direction == -1
+				if has_info:  # Start tag
+					should_skip_block = False  # Don't skip upwards from start tag
 				else:
-					should_skip_block = True # End tag, skip upwards to start
+					should_skip_block = True  # End tag, skip upwards to start
 		else:
 			# Not on boundary, searching current line for inline code
 			# Get cursor offset
@@ -344,7 +372,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 			caret_char_offset = fdm.initialCaretOffset - lineStartOffset
 			if caret_char_offset < 0:
 				caret_char_offset = 0
-			
+
 			matches = list(patterns.RE_INLINE_CODE.finditer(currentLineText))
 			target_match = None
 			if direction == 1:
@@ -357,13 +385,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 					if m.start() < caret_char_offset:
 						target_match = m
 						break
-			
+
 			if target_match:
 				log.debug(f"MarkdownNavigator: Found Inline Code in current line at {target_match.start()}")
 				lineInfo = fdm.getTextInfo()
-				
+
 				if isWeb and isinstance(lineInfo, IA2TextTextInfo):
-					prefix = currentLineText[:target_match.start()]
+					prefix = currentLineText[: target_match.start()]
 					converter = WideStringOffsetConverter(prefix)
 					utf16_delta = converter.encodedStringLength
 					new_abs = lineInfo._startOffset + utf16_delta
@@ -381,46 +409,50 @@ class MarkdownEditorOverlay(ScriptableObject):
 					return
 
 		found = False
-		
+
 		# If skipping block, consume lines until we hit another boundary
 		if should_skip_block:
 			log.debug("MarkdownNavigator: Skipping logic active.")
 			# Simple skip logic: Keep searching until the next RE_CODE_BLOCK is found.
 			# Note: This assumes it's paired.
-			pass # Loop below handles it
-			
+			pass  # Loop below handles it
+
 		while fdm.move(direction) != 0:
 			text = fdm.getText()
-			
+
 			# Check for Code Block Boundary
 			if patterns.RE_CODE_BLOCK.match(text):
 				if direction == -1:
 					has_info = len(text.strip()) > 3
-					if has_info: # Found Start Block
+					if has_info:  # Found Start Block
 						found = True
 						log.debug("MarkdownNavigator: Found Prev Code Block Start")
-					else: # Found End Block
+					else:  # Found End Block
 						scanLine = fdm.lineIndex
 						while scanLine > 0:
-							scanLine -= 1 # manual peek
+							scanLine -= 1  # manual peek
 							prevText = fdm.getText(scanLine)
 							if patterns.RE_CODE_BLOCK.match(prevText) and len(prevText.strip()) > 3:
 								# Found start
-								fdm.updateCaret(scanLine) # Move fdm there
+								fdm.updateCaret(scanLine)  # Move fdm there
 								found = True
 								break
 						if found:
 							break
 						# If not found start, maybe just stop at this end tag?
 						found = True
-				else: # Next
+				else:  # Next
 					found = True
-				
+
 				if found:
 					lineInfo = fdm.updateCaret()
-					speech.speakTextInfo(lineInfo, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+					speech.speakTextInfo(
+						lineInfo,
+						unit=textInfos.UNIT_LINE,
+						reason=controlTypes.OutputReason.CARET,
+					)
 					break
-			
+
 			# Check for Inline Code (only if not skipping block? Legacy checked both)
 			# If we are inside a code block, inline code check might be redundant or noisy.
 			if not should_skip_block:
@@ -429,10 +461,10 @@ class MarkdownEditorOverlay(ScriptableObject):
 					found = True
 					m = matches[0] if direction == 1 else matches[-1]
 					log.debug(f"MarkdownNavigator: Found Inline Code at {m.start()}")
-					
+
 					lineInfo = fdm.getTextInfo()
 					if isWeb and isinstance(lineInfo, IA2TextTextInfo):
-						prefix = text[:m.start()]
+						prefix = text[: m.start()]
 						converter = WideStringOffsetConverter(prefix)
 						utf16_delta = converter.encodedStringLength
 						new_abs = lineInfo._startOffset + utf16_delta
@@ -447,9 +479,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 						lineInfo.updateCaret()
 						speech.speak([m.group()])
 					break
-				
+
 		if not found:
-			msg = notFoundMessage if notFoundMessage else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			msg = (
+				notFoundMessage
+				if notFoundMessage
+				else (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name)
+			)
 			ui.message(msg)
 
 	def _parse_table_row(self, text):
@@ -461,26 +497,28 @@ class MarkdownEditorOverlay(ScriptableObject):
 		cells = []
 		# Split by pipe, but keep the delimiter to calculate offsets
 		# Regex looks for | not preceded by \
-		pattern = re.compile(r'(?<!\\)\|')
+		pattern = re.compile(r"(?<!\\)\|")
 		matches = list(pattern.finditer(text))
 		if not matches:
 			return []
 		for i in range(len(matches) - 1):
 			start_pipe = matches[i]
-			end_pipe = matches[i+1]
+			end_pipe = matches[i + 1]
 			cell_start = start_pipe.end()
 			cell_end = end_pipe.start()
 			cell_text = text[cell_start:cell_end]
 			stripped = cell_text.strip()
 			content_start = cell_start + cell_text.find(stripped) if stripped else cell_start
 			content_end = content_start + len(stripped)
-			cells.append({
-				'start': cell_start,
-				'end': cell_end,
-				'content_start': content_start,
-				'content_end': content_end,
-				'text': stripped
-			})
+			cells.append(
+				{
+					"start": cell_start,
+					"end": cell_end,
+					"content_start": content_start,
+					"content_end": content_end,
+					"text": stripped,
+				},
+			)
 		return cells
 
 	def _navigateTable(self, gesture, row_dir, col_dir):
@@ -491,11 +529,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 			with FastDocumentManager(self) as fdm:
 				self._navigateTableFast(fdm, row_dir, col_dir)
 		except (RuntimeError, NotImplementedError, LookupError, COMError) as e:
-			log.debugWarning(f"MarkdownNavigator: FastDocumentManager failed for table nav ({e}), falling back to legacy")
+			log.debugWarning(
+				f"MarkdownNavigator: FastDocumentManager failed for table nav ({e}), falling back to legacy",
+			)
 			navigate_table_legacy(self, gesture, row_dir, col_dir)
 
 	def _navigateTableFast(self, fdm, row_dir, col_dir):
-		isWeb = getattr(self.appModule, 'appName', '').lower() in ('chrome', 'msedge')
+		isWeb = getattr(self.appModule, "appName", "").lower() in ("chrome", "msedge")
 
 		currentLineText = fdm.getText()
 		if not patterns.RE_TABLE.match(currentLineText):
@@ -515,17 +555,17 @@ class MarkdownEditorOverlay(ScriptableObject):
 		caret_char_offset = fdm.initialCaretOffset - lineStartOffset
 		if caret_char_offset < 0:
 			caret_char_offset = 0
-		
+
 		current_col = -1
 		for i, cell in enumerate(cells):
-			if caret_char_offset >= cell['start'] and caret_char_offset <= cell['end']:
+			if caret_char_offset >= cell["start"] and caret_char_offset <= cell["end"]:
 				current_col = i
 				break
 		if current_col == -1:
 			current_col = 0
-		
+
 		target_col = current_col
-		
+
 		# Horizontal Move
 		if col_dir != 0:
 			target_col = current_col + col_dir
@@ -533,7 +573,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 				ui.message(_("Edge of table"))
 				return
 			target_cell = cells[target_col]
-			
+
 			self._moveToTableCell(fdm, target_cell, isWeb)
 			return
 
@@ -543,7 +583,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 				text = fdm.getText()
 				if not patterns.RE_TABLE.match(text):
 					break
-				
+
 				new_cells = self._parse_table_row(text)
 				if not new_cells:
 					break
@@ -551,18 +591,19 @@ class MarkdownEditorOverlay(ScriptableObject):
 				if target_col >= len(new_cells):
 					target_col = len(new_cells) - 1
 				target_cell = new_cells[target_col]
-				
+
 				self._moveToTableCell(fdm, target_cell, isWeb)
 				return
-			
+
 			ui.message(_("Edge of table"))
 			return
 
 	def _moveToTableCell(self, fdm, target_cell, isWeb):
 		from textUtils import WideStringOffsetConverter
-		target_char_offset = target_cell['content_start']
+
+		target_char_offset = target_cell["content_start"]
 		tiLine = fdm.getTextInfo()
-		
+
 		if isWeb and isinstance(tiLine, IA2TextTextInfo):
 			# Convert to UTF-16 offset
 			# tiLine._startOffset is Global UTF-16 Start of Line
@@ -570,7 +611,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 			prefix = text[:target_char_offset]
 			converter = WideStringOffsetConverter(prefix)
 			target_utf16_offset = converter.encodedStringLength
-			
+
 			new_abs = tiLine._startOffset + target_utf16_offset
 			tiNew = tiLine.copy()
 			tiNew._startOffset = new_abs
@@ -580,25 +621,29 @@ class MarkdownEditorOverlay(ScriptableObject):
 			tiLine.collapse()
 			tiLine.move(textInfos.UNIT_CHARACTER, target_char_offset)
 			tiLine.updateCaret()
-		
-		speech.speak([target_cell['text']])
+
+		speech.speak([target_cell["text"]])
 
 	@script(gesture="kb:control+alt+leftArrow")
-	def script_prevTableCell(self, gesture): self._navigateTable(gesture, 0, -1)
+	def script_prevTableCell(self, gesture):
+		self._navigateTable(gesture, 0, -1)
 
 	@script(gesture="kb:control+alt+rightArrow")
-	def script_nextTableCell(self, gesture): self._navigateTable(gesture, 0, 1)
+	def script_nextTableCell(self, gesture):
+		self._navigateTable(gesture, 0, 1)
 
 	@script(gesture="kb:control+alt+upArrow")
-	def script_tableRowUp(self, gesture): self._navigateTable(gesture, -1, 0)
+	def script_tableRowUp(self, gesture):
+		self._navigateTable(gesture, -1, 0)
 
 	@script(gesture="kb:control+alt+downArrow")
-	def script_tableRowDown(self, gesture): self._navigateTable(gesture, 1, 0)
+	def script_tableRowDown(self, gesture):
+		self._navigateTable(gesture, 1, 0)
 
 	def _find_block_boundary(self, direction, name_start, name_end):
 		if not getattr(self, "markdownBrowseMode", False):
-			return False 
-		
+			return False
+
 		try:
 			with FastDocumentManager(self) as fdm:
 				currentLineText = fdm.getText()
@@ -608,22 +653,26 @@ class MarkdownEditorOverlay(ScriptableObject):
 					if regex.match(currentLineText):
 						matched_regex = regex
 						break
-				
+
 				if not matched_regex:
 					ui.message(_("Not inside a list, table, or blockquote"))
 					return True
-				
+
 				last_matching_line = fdm.lineIndex
-				
+
 				while fdm.move(direction) != 0:
 					text = fdm.getText()
 					if not matched_regex.match(text):
 						break
 					last_matching_line = fdm.lineIndex
-				
+
 				# Move to the last matching line
 				lineInfo = fdm.updateCaret(last_matching_line)
-				speech.speakTextInfo(lineInfo, unit=textInfos.UNIT_LINE, reason=controlTypes.OutputReason.CARET)
+				speech.speakTextInfo(
+					lineInfo,
+					unit=textInfos.UNIT_LINE,
+					reason=controlTypes.OutputReason.CARET,
+				)
 				return True
 
 		except (RuntimeError, NotImplementedError, LookupError, COMError) as e:
@@ -640,111 +689,392 @@ class MarkdownEditorOverlay(ScriptableObject):
 		if not self._find_block_boundary(-1, _("start"), _("end")):
 			gesture.send()
 
-
 	# Tables (Explicitly using _navigateBlock)
 	@script(gesture="kb:t")
-	def script_nextTable(self, gesture): self._navigateBlock(gesture, patterns.RE_TABLE, 1, _("table"), notFoundMessage=_("no next table"))
+	def script_nextTable(self, gesture):
+		self._navigateBlock(gesture, patterns.RE_TABLE, 1, _("table"), notFoundMessage=_("no next table"))
+
 	@script(gesture="kb:shift+t")
-	def script_prevTable(self, gesture): self._navigateBlock(gesture, patterns.RE_TABLE, -1, _("table"), notFoundMessage=_("no previous table"))
+	def script_prevTable(self, gesture):
+		self._navigateBlock(
+			gesture,
+			patterns.RE_TABLE,
+			-1,
+			_("table"),
+			notFoundMessage=_("no previous table"),
+		)
 
 	# Links & Images (Inline)
 	@script(gesture="kb:k")
-	def script_nextLink(self, gesture): self._navigate(gesture, patterns.RE_LINK, 1, _("link"), focus_element=True, notFoundMessage=_("no next link"))
+	def script_nextLink(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_LINK,
+			1,
+			_("link"),
+			focus_element=True,
+			notFoundMessage=_("no next link"),
+		)
+
 	@script(gesture="kb:shift+k")
-	def script_prevLink(self, gesture): self._navigate(gesture, patterns.RE_LINK, -1, _("link"), focus_element=True, notFoundMessage=_("no previous link"))
-	
+	def script_prevLink(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_LINK,
+			-1,
+			_("link"),
+			focus_element=True,
+			notFoundMessage=_("no previous link"),
+		)
+
 	@script(gesture="kb:g")
-	def script_nextImage(self, gesture): self._navigate(gesture, patterns.RE_IMAGE, 1, _("image"), focus_element=True, notFoundMessage=_("no next graphic"))
+	def script_nextImage(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_IMAGE,
+			1,
+			_("image"),
+			focus_element=True,
+			notFoundMessage=_("no next graphic"),
+		)
+
 	@script(gesture="kb:shift+g")
-	def script_prevImage(self, gesture): self._navigate(gesture, patterns.RE_IMAGE, -1, _("image"), focus_element=True, notFoundMessage=_("no previous graphic"))
+	def script_prevImage(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_IMAGE,
+			-1,
+			_("image"),
+			focus_element=True,
+			notFoundMessage=_("no previous graphic"),
+		)
 
 	# Block Elements
 	@script(gesture="kb:h")
-	def script_nextHeading(self, gesture): self._navigate(gesture, patterns.RE_HEADING, 1, _("heading"), notFoundMessage=_("no next heading"))
+	def script_nextHeading(self, gesture):
+		self._navigate(gesture, patterns.RE_HEADING, 1, _("heading"), notFoundMessage=_("no next heading"))
+
 	@script(gesture="kb:shift+h")
-	def script_prevHeading(self, gesture): self._navigate(gesture, patterns.RE_HEADING, -1, _("heading"), notFoundMessage=_("no previous heading"))
+	def script_prevHeading(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_HEADING,
+			-1,
+			_("heading"),
+			notFoundMessage=_("no previous heading"),
+		)
 
 	@script(gesture="kb:i")
-	def script_nextListItem(self, gesture): self._navigate(gesture, patterns.RE_LIST_ITEM, 1, _("list item"), notFoundMessage=_("no next list item"))
+	def script_nextListItem(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_LIST_ITEM,
+			1,
+			_("list item"),
+			notFoundMessage=_("no next list item"),
+		)
+
 	@script(gesture="kb:shift+i")
-	def script_prevListItem(self, gesture): self._navigate(gesture, patterns.RE_LIST_ITEM, -1, _("list item"), notFoundMessage=_("no previous list item"))
+	def script_prevListItem(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_LIST_ITEM,
+			-1,
+			_("list item"),
+			notFoundMessage=_("no previous list item"),
+		)
 
 	# Italics (E - Emphasis)
 	@script(gesture="kb:e")
-	def script_nextItalic(self, gesture): self._navigate(gesture, patterns.RE_ITALIC, 1, _("italic"), focus_element=True, notFoundMessage=_("no next italic"))
+	def script_nextItalic(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_ITALIC,
+			1,
+			_("italic"),
+			focus_element=True,
+			notFoundMessage=_("no next italic"),
+		)
+
 	@script(gesture="kb:shift+e")
-	def script_prevItalic(self, gesture): self._navigate(gesture, patterns.RE_ITALIC, -1, _("italic"), focus_element=True, notFoundMessage=_("no previous italic"))
+	def script_prevItalic(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_ITALIC,
+			-1,
+			_("italic"),
+			focus_element=True,
+			notFoundMessage=_("no previous italic"),
+		)
 
 	# Strikethrough (D - Delete)
 	@script(gesture="kb:d")
-	def script_nextStrikethrough(self, gesture): self._navigate(gesture, patterns.RE_STRIKETHROUGH, 1, _("strikethrough"), focus_element=True, notFoundMessage=_("no next strikethrough"))
+	def script_nextStrikethrough(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_STRIKETHROUGH,
+			1,
+			_("strikethrough"),
+			focus_element=True,
+			notFoundMessage=_("no next strikethrough"),
+		)
+
 	@script(gesture="kb:shift+d")
-	def script_prevStrikethrough(self, gesture): self._navigate(gesture, patterns.RE_STRIKETHROUGH, -1, _("strikethrough"), focus_element=True, notFoundMessage=_("no previous strikethrough"))
+	def script_prevStrikethrough(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_STRIKETHROUGH,
+			-1,
+			_("strikethrough"),
+			focus_element=True,
+			notFoundMessage=_("no previous strikethrough"),
+		)
 
 	# Bold (B)
 	@script(gesture="kb:b")
-	def script_nextBold(self, gesture): self._navigate(gesture, patterns.RE_BOLD, 1, _("bold"), focus_element=True, notFoundMessage=_("no next bold"))
+	def script_nextBold(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_BOLD,
+			1,
+			_("bold"),
+			focus_element=True,
+			notFoundMessage=_("no next bold"),
+		)
+
 	@script(gesture="kb:shift+b")
-	def script_prevBold(self, gesture): self._navigate(gesture, patterns.RE_BOLD, -1, _("bold"), focus_element=True, notFoundMessage=_("no previous bold"))
+	def script_prevBold(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_BOLD,
+			-1,
+			_("bold"),
+			focus_element=True,
+			notFoundMessage=_("no previous bold"),
+		)
 
 	# Footnotes (F)
 	@script(gesture="kb:f")
-	def script_nextFootnote(self, gesture): self._navigate(gesture, patterns.RE_FOOTNOTE, 1, _("footnote"), focus_element=True, notFoundMessage=_("no next footnote"))
+	def script_nextFootnote(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_FOOTNOTE,
+			1,
+			_("footnote"),
+			focus_element=True,
+			notFoundMessage=_("no next footnote"),
+		)
+
 	@script(gesture="kb:shift+f")
-	def script_prevFootnote(self, gesture): self._navigate(gesture, patterns.RE_FOOTNOTE, -1, _("footnote"), focus_element=True, notFoundMessage=_("no previous footnote"))
+	def script_prevFootnote(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_FOOTNOTE,
+			-1,
+			_("footnote"),
+			focus_element=True,
+			notFoundMessage=_("no previous footnote"),
+		)
 
 	@script(gesture="kb:l")
-	def script_nextList(self, gesture): self._navigateBlock(gesture, patterns.RE_LIST_ITEM, 1, _("list"), notFoundMessage=_("no next list"))
+	def script_nextList(self, gesture):
+		self._navigateBlock(gesture, patterns.RE_LIST_ITEM, 1, _("list"), notFoundMessage=_("no next list"))
+
 	@script(gesture="kb:shift+l")
-	def script_prevList(self, gesture): self._navigateBlock(gesture, patterns.RE_LIST_ITEM, -1, _("list"), notFoundMessage=_("no previous list"))
+	def script_prevList(self, gesture):
+		self._navigateBlock(
+			gesture,
+			patterns.RE_LIST_ITEM,
+			-1,
+			_("list"),
+			notFoundMessage=_("no previous list"),
+		)
 
 	@script(gesture="kb:q")
-	def script_nextBlockquote(self, gesture): self._navigateBlock(gesture, patterns.RE_BLOCKQUOTE, 1, _("blockquote"), notFoundMessage=_("no next block quote"))
+	def script_nextBlockquote(self, gesture):
+		self._navigateBlock(
+			gesture,
+			patterns.RE_BLOCKQUOTE,
+			1,
+			_("blockquote"),
+			notFoundMessage=_("no next block quote"),
+		)
+
 	@script(gesture="kb:shift+q")
-	def script_prevBlockquote(self, gesture): self._navigateBlock(gesture, patterns.RE_BLOCKQUOTE, -1, _("blockquote"), notFoundMessage=_("no previous block quote"))
+	def script_prevBlockquote(self, gesture):
+		self._navigateBlock(
+			gesture,
+			patterns.RE_BLOCKQUOTE,
+			-1,
+			_("blockquote"),
+			notFoundMessage=_("no previous block quote"),
+		)
 
 	@script(gesture="kb:c")
-	def script_nextCodeBlock(self, gesture): self._navigateCode(gesture, 1, _("code"), notFoundMessage=_("no next code"))
+	def script_nextCodeBlock(self, gesture):
+		self._navigateCode(gesture, 1, _("code"), notFoundMessage=_("no next code"))
+
 	@script(gesture="kb:shift+c")
-	def script_prevCodeBlock(self, gesture): self._navigateCode(gesture, -1, _("code"), notFoundMessage=_("no previous code"))
+	def script_prevCodeBlock(self, gesture):
+		self._navigateCode(gesture, -1, _("code"), notFoundMessage=_("no previous code"))
 
 	@script(gesture="kb:s")
-	def script_nextSeparator(self, gesture): self._navigate(gesture, patterns.RE_SEPARATOR, 1, _("separator"), notFoundMessage=_("no next separator"))
+	def script_nextSeparator(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_SEPARATOR,
+			1,
+			_("separator"),
+			notFoundMessage=_("no next separator"),
+		)
+
 	@script(gesture="kb:shift+s")
-	def script_prevSeparator(self, gesture): self._navigate(gesture, patterns.RE_SEPARATOR, -1, _("separator"), notFoundMessage=_("no previous separator"))
+	def script_prevSeparator(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_SEPARATOR,
+			-1,
+			_("separator"),
+			notFoundMessage=_("no previous separator"),
+		)
 
 	@script(gesture="kb:x")
-	def script_nextCheckbox(self, gesture): self._navigate(gesture, patterns.RE_CHECKBOX, 1, _("checkbox"), notFoundMessage=_("no next check box"))
+	def script_nextCheckbox(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_CHECKBOX,
+			1,
+			_("checkbox"),
+			notFoundMessage=_("no next check box"),
+		)
+
 	@script(gesture="kb:shift+x")
-	def script_prevCheckbox(self, gesture): self._navigate(gesture, patterns.RE_CHECKBOX, -1, _("checkbox"), notFoundMessage=_("no previous check box"))
+	def script_prevCheckbox(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_CHECKBOX,
+			-1,
+			_("checkbox"),
+			notFoundMessage=_("no previous check box"),
+		)
 
 	# Headings Levels
 	@script(gesture="kb:1")
-	def script_nextH1(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(1), 1, _("level 1 heading"), notFoundMessage=_("No next heading at level {i}").format(i=1))
+	def script_nextH1(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(1),
+			1,
+			_("level 1 heading"),
+			notFoundMessage=_("No next heading at level {i}").format(i=1),
+		)
+
 	@script(gesture="kb:shift+1")
-	def script_prevH1(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(1), -1, _("level 1 heading"), notFoundMessage=_("No previous heading at level {i}").format(i=1))
-	
+	def script_prevH1(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(1),
+			-1,
+			_("level 1 heading"),
+			notFoundMessage=_("No previous heading at level {i}").format(i=1),
+		)
+
 	@script(gesture="kb:2")
-	def script_nextH2(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(2), 1, _("level 2 heading"), notFoundMessage=_("No next heading at level {i}").format(i=2))
+	def script_nextH2(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(2),
+			1,
+			_("level 2 heading"),
+			notFoundMessage=_("No next heading at level {i}").format(i=2),
+		)
+
 	@script(gesture="kb:shift+2")
-	def script_prevH2(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(2), -1, _("level 2 heading"), notFoundMessage=_("No previous heading at level {i}").format(i=2))
-	
+	def script_prevH2(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(2),
+			-1,
+			_("level 2 heading"),
+			notFoundMessage=_("No previous heading at level {i}").format(i=2),
+		)
+
 	@script(gesture="kb:3")
-	def script_nextH3(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(3), 1, _("level 3 heading"), notFoundMessage=_("No next heading at level {i}").format(i=3))
+	def script_nextH3(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(3),
+			1,
+			_("level 3 heading"),
+			notFoundMessage=_("No next heading at level {i}").format(i=3),
+		)
+
 	@script(gesture="kb:shift+3")
-	def script_prevH3(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(3), -1, _("level 3 heading"), notFoundMessage=_("No previous heading at level {i}").format(i=3))
-	
+	def script_prevH3(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(3),
+			-1,
+			_("level 3 heading"),
+			notFoundMessage=_("No previous heading at level {i}").format(i=3),
+		)
+
 	@script(gesture="kb:4")
-	def script_nextH4(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(4), 1, _("level 4 heading"), notFoundMessage=_("No next heading at level {i}").format(i=4))
+	def script_nextH4(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(4),
+			1,
+			_("level 4 heading"),
+			notFoundMessage=_("No next heading at level {i}").format(i=4),
+		)
+
 	@script(gesture="kb:shift+4")
-	def script_prevH4(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(4), -1, _("level 4 heading"), notFoundMessage=_("No previous heading at level {i}").format(i=4))
-	
+	def script_prevH4(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(4),
+			-1,
+			_("level 4 heading"),
+			notFoundMessage=_("No previous heading at level {i}").format(i=4),
+		)
+
 	@script(gesture="kb:5")
-	def script_nextH5(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(5), 1, _("level 5 heading"), notFoundMessage=_("No next heading at level {i}").format(i=5))
+	def script_nextH5(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(5),
+			1,
+			_("level 5 heading"),
+			notFoundMessage=_("No next heading at level {i}").format(i=5),
+		)
+
 	@script(gesture="kb:shift+5")
-	def script_prevH5(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(5), -1, _("level 5 heading"), notFoundMessage=_("No previous heading at level {i}").format(i=5))
-	
+	def script_prevH5(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(5),
+			-1,
+			_("level 5 heading"),
+			notFoundMessage=_("No previous heading at level {i}").format(i=5),
+		)
+
 	@script(gesture="kb:6")
-	def script_nextH6(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(6), 1, _("level 6 heading"), notFoundMessage=_("No next heading at level {i}").format(i=6))
+	def script_nextH6(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(6),
+			1,
+			_("level 6 heading"),
+			notFoundMessage=_("No next heading at level {i}").format(i=6),
+		)
+
 	@script(gesture="kb:shift+6")
-	def script_prevH6(self, gesture): self._navigate(gesture, patterns.getHeadingRegex(6), -1, _("level 6 heading"), notFoundMessage=_("No previous heading at level {i}").format(i=6))
+	def script_prevH6(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.getHeadingRegex(6),
+			-1,
+			_("level 6 heading"),
+			notFoundMessage=_("No previous heading at level {i}").format(i=6),
+		)

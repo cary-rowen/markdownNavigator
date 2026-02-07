@@ -7,8 +7,8 @@ import globalPluginHandler
 import controlTypes
 from .navigator import MarkdownEditorOverlay
 
-class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
+class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def chooseNVDAObjectOverlayClasses(self, obj, clsList):
 		# Apply to all EditableText objects (Edit controls, RichEdit, etc.)
 		# Also explicitly check for Scintilla to be safe, as sometimes Role might be unstable or specific
