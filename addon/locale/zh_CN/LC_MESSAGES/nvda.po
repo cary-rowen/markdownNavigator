@@ -345,3 +345,12 @@ msgstr "一个 NVDA 插件，为 Markdown 文件提供结构化导航（标题�
 #: buildVars.py:29
 msgid "Initial version."
 msgstr "初始版本。"
+
+msgid "math"
+msgstr "公式"
+
+msgid "no next math formula"
+msgstr "没有下一个公式"
+
+msgid "no previous math formula"
+msgstr "没有上一个公式"

@@ -751,6 +751,28 @@ class MarkdownEditorOverlay(ScriptableObject):
 			notFoundMessage=_("no previous graphic"),
 		)
 
+	@script(gesture="kb:m")
+	def script_nextMath(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_LATEX_MATH,
+			1,
+			_("math"),
+			focus_element=True,
+			notFoundMessage=_("no next math formula"),
+		)
+
+	@script(gesture="kb:shift+m")
+	def script_prevMath(self, gesture):
+		self._navigate(
+			gesture,
+			patterns.RE_LATEX_MATH,
+			-1,
+			_("math"),
+			focus_element=True,
+			notFoundMessage=_("no previous math formula"),
+		)
+
 	# Block Elements
 	@script(gesture="kb:h")
 	def script_nextHeading(self, gesture):
