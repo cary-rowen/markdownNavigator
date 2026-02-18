@@ -44,6 +44,7 @@ Once the mode is enabled, you can use the following single-letter keys.
 | **F** | Footnote | Footnote reference `[^1]` |
 | **,** | End of Block | Jump to the end of the current block element |
 | **Shift+,**| Start of Block | Jump to the start of the current block element |
+| **M** | Math | LaTeX math expression (`$...$` or `$$...$$`) |
 
 ### Table Cell Navigation
 
