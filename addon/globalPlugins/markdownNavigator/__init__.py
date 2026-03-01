@@ -20,5 +20,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			obj.role == controlTypes.Role.EDITABLETEXT
 			or windowClassName == "Scintilla"
 			or windowClassName == "RichEditD2DPT"
+			or windowClassName == "AkelEditW"
 		):
 			clsList.insert(0, MarkdownEditorOverlay)
