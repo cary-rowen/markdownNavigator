@@ -23,14 +23,16 @@ addon_info = AddonInfo(
 	# Translators: Long description to be shown for this add-on on add-on information from add-on store
 	addon_description=_("""An NVDA add-on that provides structured navigation (headings, lists, tables, etc.) in editable text areas for Markdown files."""),
 	# version
-	addon_version="0.1.1",
+	addon_version="0.2.0",
 	# Brief changelog for this version
 	# Translators: what's new content for the add-on version to be shown in the add-on store
-	addon_changelog=_("""Initial version."""),
+	addon_changelog=_("""### 0.2.0
+* Supported AkelPad.
+* Added command to navigate to next/previous math formula (M/Shift+M)."""),
 	# Author(s)
 	addon_author="cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support
-	addon_url="https://github.com/cary-rowen/markdownNavigator",
+	addon_url="https://addonstore.nvaccess.org/?addonId=markdownNavigator",
 	# URL for the add-on repository where the source code can be found
 	addon_sourceURL="https://github.com/cary-rowen/markdownNavigator",
 	# Documentation file name
