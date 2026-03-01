@@ -1,0 +1,340 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: 'nvda-translations@groups.io'\n"
+"POT-Creation-Date: 2026-02-15 11:03+0200\n"
+"PO-Revision-Date: 2026-02-28 12:25+0200\n"
+"Last-Translator: Volodymyr Pyrih <vp88.mobile@gmail.com>\n"
+"Language-Team: \n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.8\n"
+"X-Poedit-Basepath: .\n"
+
+#: addon\globalPlugins\markdownNavigator\legacy.py:170
+#: addon\globalPlugins\markdownNavigator\legacy.py:190
+#: addon\globalPlugins\markdownNavigator\legacy.py:266
+#: addon\globalPlugins\markdownNavigator\legacy.py:364
+#: addon\globalPlugins\markdownNavigator\navigator.py:217
+#: addon\globalPlugins\markdownNavigator\navigator.py:239
+#: addon\globalPlugins\markdownNavigator\navigator.py:318
+#: addon\globalPlugins\markdownNavigator\navigator.py:487
+#, python-format
+msgid "no next %s found"
+msgstr "наступний %s не знайдено"
+
+#: addon\globalPlugins\markdownNavigator\legacy.py:170
+#: addon\globalPlugins\markdownNavigator\legacy.py:190
+#: addon\globalPlugins\markdownNavigator\legacy.py:266
+#: addon\globalPlugins\markdownNavigator\legacy.py:364
+#: addon\globalPlugins\markdownNavigator\navigator.py:217
+#: addon\globalPlugins\markdownNavigator\navigator.py:239
+#: addon\globalPlugins\markdownNavigator\navigator.py:318
+#: addon\globalPlugins\markdownNavigator\navigator.py:487
+#, python-format
+msgid "no previous %s found"
+msgstr "попередні %s не знайдено"
+
+#: addon\globalPlugins\markdownNavigator\legacy.py:467
+#: addon\globalPlugins\markdownNavigator\legacy.py:494
+#: addon\globalPlugins\markdownNavigator\legacy.py:497
+#: addon\globalPlugins\markdownNavigator\legacy.py:501
+#: addon\globalPlugins\markdownNavigator\navigator.py:575
+#: addon\globalPlugins\markdownNavigator\navigator.py:600
+msgid "Edge of table"
+msgstr "Межа таблиці"
+
+#. Translators: Description for the toggle script.
+#: addon\globalPlugins\markdownNavigator\navigator.py:42
+msgid ""
+"Toggles Markdown Browse Mode. When enabled, keys like H, I, T navigate "
+"content."
+msgstr ""
+"Перемикає режим огляду Markdown. Якщо ввімкнено, такі клавіші, як H, I, T, "
+"використовуються для навігації у межах вмісту."
+
+#. Translators: Message when mode is enabled.
+#: addon\globalPlugins\markdownNavigator\navigator.py:56
+msgid "Markdown Browse Mode On"
+msgstr "Режим огляду Markdown увімкнено"
+
+#. Translators: Message when mode is disabled.
+#: addon\globalPlugins\markdownNavigator\navigator.py:59
+msgid "Markdown Browse Mode Off"
+msgstr "Режим огляду Markdown вимкнено"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:544
+#: addon\globalPlugins\markdownNavigator\navigator.py:551
+msgid "Not inside a table"
+msgstr "Не всередині таблиці"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:660
+msgid "Not inside a list, table, or blockquote"
+msgstr "Не всередині списку, таблиці чи цитати"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:686
+#: addon\globalPlugins\markdownNavigator\navigator.py:691
+msgid "start"
+msgstr "початок"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:686
+#: addon\globalPlugins\markdownNavigator\navigator.py:691
+msgid "end"
+msgstr "кінець"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:697
+#: addon\globalPlugins\markdownNavigator\navigator.py:705
+msgid "table"
+msgstr "таблиця"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:697
+msgid "no next table"
+msgstr "немає наступної таблиці"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:706
+msgid "no previous table"
+msgstr "немає попередньої таблиці"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:716
+#: addon\globalPlugins\markdownNavigator\navigator.py:727
+msgid "link"
+msgstr "посилання"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:718
+msgid "no next link"
+msgstr "немає наступного посилання"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:729
+msgid "no previous link"
+msgstr "немає попереднього посилання"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:738
+#: addon\globalPlugins\markdownNavigator\navigator.py:749
+msgid "image"
+msgstr "зображення"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:740
+msgid "no next graphic"
+msgstr "немає наступної графіки"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:751
+msgid "no previous graphic"
+msgstr "немає попередньої графіки"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:757
+#: addon\globalPlugins\markdownNavigator\navigator.py:765
+msgid "heading"
+msgstr "заголовок"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:757
+msgid "no next heading"
+msgstr "немає наступного заголовка"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:766
+msgid "no previous heading"
+msgstr "немає попереднього заголовка"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:775
+#: addon\globalPlugins\markdownNavigator\navigator.py:785
+msgid "list item"
+msgstr "елемент списку"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:776
+msgid "no next list item"
+msgstr "немає наступного елемента списку"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:786
+msgid "no previous list item"
+msgstr "немає попереднього елемента списку"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:796
+#: addon\globalPlugins\markdownNavigator\navigator.py:807
+msgid "italic"
+msgstr "курсив"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:798
+msgid "no next italic"
+msgstr "немає наступного курсиву"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:809
+msgid "no previous italic"
+msgstr "немає попереднього курсиву"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:819
+#: addon\globalPlugins\markdownNavigator\navigator.py:830
+msgid "strikethrough"
+msgstr "перекреслення"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:821
+msgid "no next strikethrough"
+msgstr "немає наступного перекреслення"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:832
+msgid "no previous strikethrough"
+msgstr "немає попереднього перекреслення"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:842
+#: addon\globalPlugins\markdownNavigator\navigator.py:853
+msgid "bold"
+msgstr "жирний"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:844
+msgid "no next bold"
+msgstr "немає наступного жирного"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:855
+msgid "no previous bold"
+msgstr "немає попереднього жирного"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:865
+#: addon\globalPlugins\markdownNavigator\navigator.py:876
+msgid "footnote"
+msgstr "виноска"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:867
+msgid "no next footnote"
+msgstr "немає наступної виноски"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:878
+msgid "no previous footnote"
+msgstr "немає попередньої виноски"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:883
+#: addon\globalPlugins\markdownNavigator\navigator.py:891
+msgid "list"
+msgstr "список"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:883
+msgid "no next list"
+msgstr "немає наступного списку"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:892
+msgid "no previous list"
+msgstr "немає попереднього списку"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:901
+#: addon\globalPlugins\markdownNavigator\navigator.py:911
+msgid "blockquote"
+msgstr "цитата"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:902
+msgid "no next block quote"
+msgstr "немає наступної цитати"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:912
+msgid "no previous block quote"
+msgstr "немає попередньої цитати"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:917
+#: addon\globalPlugins\markdownNavigator\navigator.py:921
+msgid "code"
+msgstr "код"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:917
+msgid "no next code"
+msgstr "немає наступного коду"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:921
+msgid "no previous code"
+msgstr "немає попереднього коду"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:929
+#: addon\globalPlugins\markdownNavigator\navigator.py:939
+msgid "separator"
+msgstr "роздільник"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:930
+msgid "no next separator"
+msgstr "немає наступного роздільника"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:940
+msgid "no previous separator"
+msgstr "немає попереднього роздільника"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:949
+#: addon\globalPlugins\markdownNavigator\navigator.py:959
+msgid "checkbox"
+msgstr "прапорець"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:950
+msgid "no next check box"
+msgstr "немає наступного прапорця"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:960
+msgid "no previous check box"
+msgstr "немає попереднього прапорця"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:970
+#: addon\globalPlugins\markdownNavigator\navigator.py:980
+msgid "level 1 heading"
+msgstr "заголовок рівня 1"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:971
+#: addon\globalPlugins\markdownNavigator\navigator.py:991
+#: addon\globalPlugins\markdownNavigator\navigator.py:1011
+#: addon\globalPlugins\markdownNavigator\navigator.py:1031
+#: addon\globalPlugins\markdownNavigator\navigator.py:1051
+#: addon\globalPlugins\markdownNavigator\navigator.py:1071
+#, python-brace-format
+msgid "No next heading at level {i}"
+msgstr "Немає наступного заголовка рівня {i}"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:981
+#: addon\globalPlugins\markdownNavigator\navigator.py:1001
+#: addon\globalPlugins\markdownNavigator\navigator.py:1021
+#: addon\globalPlugins\markdownNavigator\navigator.py:1041
+#: addon\globalPlugins\markdownNavigator\navigator.py:1061
+#: addon\globalPlugins\markdownNavigator\navigator.py:1081
+#, python-brace-format
+msgid "No previous heading at level {i}"
+msgstr "Немає попереднього заголовка рівня {i}"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:990
+#: addon\globalPlugins\markdownNavigator\navigator.py:1000
+msgid "level 2 heading"
+msgstr "заголовок рівня 2"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:1010
+#: addon\globalPlugins\markdownNavigator\navigator.py:1020
+msgid "level 3 heading"
+msgstr "заголовок рівня 3"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:1030
+#: addon\globalPlugins\markdownNavigator\navigator.py:1040
+msgid "level 4 heading"
+msgstr "заголовок рівня 4"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:1050
+#: addon\globalPlugins\markdownNavigator\navigator.py:1060
+msgid "level 5 heading"
+msgstr "заголовок рівня 5"
+
+#: addon\globalPlugins\markdownNavigator\navigator.py:1070
+#: addon\globalPlugins\markdownNavigator\navigator.py:1080
+msgid "level 6 heading"
+msgstr "заголовок рівня 6"
+
+#. Add-on summary/title, usually the user visible name of the add-on
+#. Translators: Summary/title for this add-on
+#. to be shown on installation and add-on information found in add-on store
+#: buildVars.py:21
+msgid "Markdown Navigator"
+msgstr "Навігатор Markdown"
+
+#. Add-on description
+#. Translators: Long description to be shown for this add-on on add-on information from add-on store
+#: buildVars.py:24
+msgid ""
+"An NVDA add-on that provides structured navigation (headings, lists, tables, "
+"etc.) in editable text areas for Markdown files."
+msgstr ""
+"Додаток NVDA, що забезпечує структуровану навігацію (заголовки, списки, "
+"таблиці тощо) у редагованих текстових областях для файлів Markdown."
+
+#. Brief changelog for this version
+#. Translators: what's new content for the add-on version to be shown in the add-on store
+#: buildVars.py:29
+msgid "Initial version."
+msgstr "Початкова версія."
