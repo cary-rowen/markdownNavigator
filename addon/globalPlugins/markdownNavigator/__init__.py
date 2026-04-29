@@ -15,7 +15,7 @@ _SUPPORTED_EDITOR_WINDOW_CLASSES = frozenset(
 		"Scintilla",
 		"RichEditD2DPT",
 		"AkelEditW",
-	}
+	},
 )
 
 

@@ -24,5 +24,6 @@ RE_STRIKETHROUGH = re.compile(r"(~~)(?=\S)(.+?)(?<=\S)\1")
 RE_FOOTNOTE = re.compile(r"\[\^.+?\](:)?")
 RE_LATEX_MATH = re.compile(r"\$\$[\s\S]*?\$\$|(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)")
 
+
 def getHeadingRegex(level):
 	return re.compile(r"^\s*#{%d}\s" % level)
