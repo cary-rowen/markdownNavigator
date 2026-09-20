@@ -61,4 +61,8 @@ When the cursor is inside a Markdown table and Browse Mode is enabled, you can u
 *   If pressing the keys above types characters instead of navigating, please check if you have enabled Browse Mode by pressing `NVDA + Shift + Space`.
 *   In VS Code, due to the editor rendering content on demand (virtualization), this add-on's browse mode may not work as expected for content that is not currently visible/rendered.
 
+## Development
+
+Run `uv sync` to install the build, translation, and lint tools. Python package discovery is limited to `addon` so template documentation does not interfere with dependency setup. Run `uv run prek run --all-files` for local checks and `uv run scons` to build (gettext is required). Build CI skips strict Pyright checking until the add-on is ready for it.
+
 Copyright (C) 2026 Cary-rowen <manchen_0528@outlook.com>
