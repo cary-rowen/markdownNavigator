@@ -4,6 +4,7 @@
 # This file is covered by the GNU General Public License.
 
 from __future__ import annotations
+import builtins
 import addonHandler
 import controlTypes
 import textInfos
@@ -16,8 +17,11 @@ import nvwave
 import globalVars
 from scriptHandler import script
 import speech
+from speech import sayAll
 from logHandler import log
 from baseObject import ScriptableObject
+from textInfos.offsets import Offsets, OffsetsTextInfo
+from textUtils import getOffsetConverter
 from . import patterns
 from _ctypes import COMError
 from NVDAObjects.IAccessible import IA2TextTextInfo
@@ -38,6 +42,8 @@ class MarkdownEditorOverlay(ScriptableObject):
 		gesture="kb:NVDA+shift+space",
 	)
 	def script_toggleMarkdownBrowseMode(self, gesture) -> None:
+		if self._hasActiveTreeInterceptor():
+			return
 		self.markdownBrowseMode = not self.markdownBrowseMode
 		self._reportBrowseModeState()
 
@@ -56,7 +62,12 @@ class MarkdownEditorOverlay(ScriptableObject):
 	def getScript(self, gesture):
 		"""Handle browse mode specific gesture trapping."""
 		script = super().getScript(gesture)
-		if not getattr(self, "markdownBrowseMode", False):
+		if self._hasActiveTreeInterceptor():
+			scriptFunction = getattr(script, "__func__", script)
+			if MarkdownEditorOverlay.__dict__.get(getattr(scriptFunction, "__name__", "")) is scriptFunction:
+				return None
+			return script
+		if not self._isMarkdownBrowseActive():
 			return script
 
 		if script:
@@ -67,6 +78,27 @@ class MarkdownEditorOverlay(ScriptableObject):
 			return self.script_trapNonCommandGesture
 
 		return None
+
+	def _hasActiveTreeInterceptor(self) -> bool:
+		"""Return whether a ready tree interceptor currently owns input."""
+		treeInterceptor = getattr(self, "treeInterceptor", None)
+		return bool(
+			treeInterceptor and getattr(treeInterceptor, "isReady", False) and not treeInterceptor.passThrough
+		)
+
+	def _isMarkdownBrowseActive(self) -> bool:
+		"""Return whether Markdown browse commands should handle input."""
+		return bool(getattr(self, "markdownBrowseMode", False) and not self._hasActiveTreeInterceptor())
+
+	def makeTextInfo(self, position):
+		"""Create TextInfo instances, including bookmarks from flat IA2 ranges."""
+		if (
+			isinstance(position, Offsets)
+			and not issubclass(self.TextInfo, OffsetsTextInfo)
+			and hasattr(self, "IAccessibleTextObject")
+		):
+			return IA2TextTextInfo(self, position)
+		return super().makeTextInfo(position)
 
 	def script_trapNonCommandGesture(self, gesture) -> None:
 		winsound.MessageBeep()
@@ -91,8 +123,9 @@ class MarkdownEditorOverlay(ScriptableObject):
 		:param focus_element: Whether to position caret at match (True for inline elements).
 		:param notFoundMessage: Custom message when element not found.
 		"""
-		if not getattr(self, "markdownBrowseMode", False):
-			gesture.send()
+		if not self._isMarkdownBrowseActive():
+			if not self._hasActiveTreeInterceptor():
+				gesture.send()
 			return
 		with FastDocumentManager(self) as fdm:
 			self._navigateFast(fdm, regex, direction, name, focus_element, notFoundMessage)
@@ -106,24 +139,39 @@ class MarkdownEditorOverlay(ScriptableObject):
 		charLength: int = 0,
 	) -> None:
 		"""Move the caret to a Python character offset, using IA2 UTF-16 offsets for web editors."""
-		from textUtils import WideStringOffsetConverter
-
-		if isWeb and isinstance(textInfo, IA2TextTextInfo):
-			targetUtf16Offset = WideStringOffsetConverter(text[:charOffset]).encodedStringLength
-			textInfo = textInfo.copy()
-			textInfo._startOffset += targetUtf16Offset
-			textInfo._endOffset = textInfo._startOffset
-			if charLength:
-				targetUtf16Length = WideStringOffsetConverter(
-					text[charOffset : charOffset + charLength],
-				).encodedStringLength
-				textInfo._endOffset += targetUtf16Length
-			textInfo.updateCaret()
-			return
-
-		textInfo.collapse()
-		textInfo.move(textInfos.UNIT_CHARACTER, charOffset)
+		textInfo = self._getCharacterRangeTextInfo(
+			textInfo,
+			text,
+			charOffset,
+			charLength if isWeb else 0,
+		)
 		textInfo.updateCaret()
+
+	def _getCharacterRangeTextInfo(
+		self,
+		textInfo: textInfos.TextInfo,
+		text: str,
+		charOffset: int,
+		charLength: int = 0,
+	) -> textInfos.TextInfo:
+		"""Return a TextInfo for a Python character range."""
+		if isinstance(textInfo, OffsetsTextInfo):
+			converter = getOffsetConverter(textInfo.encoding)(text)
+			startOffset, endOffset = converter.strToEncodedOffsets(
+				charOffset,
+				charOffset + charLength,
+			)
+			textInfo = textInfo.copy()
+			lineStartOffset = textInfo._startOffset
+			textInfo._startOffset = lineStartOffset + startOffset
+			textInfo._endOffset = lineStartOffset + endOffset
+			return textInfo
+
+		startInfo = textInfo.moveToCodepointOffset(charOffset)
+		if charLength:
+			endInfo = textInfo.moveToCodepointOffset(charOffset + charLength)
+			startInfo.setEndPoint(endInfo, "endToStart")
+		return startInfo
 
 	def _navigateFast(
 		self,
@@ -228,8 +276,9 @@ class MarkdownEditorOverlay(ScriptableObject):
 		notFoundMessage: str | None = None,
 	) -> None:
 		"""Navigation for block elements (tables, code blocks, blockquotes, etc.)."""
-		if not getattr(self, "markdownBrowseMode", False):
-			gesture.send()
+		if not self._isMarkdownBrowseActive():
+			if not self._hasActiveTreeInterceptor():
+				gesture.send()
 			return
 		with FastDocumentManager(self) as fdm:
 			self._navigateBlockFast(fdm, regex, direction, name, notFoundMessage)
@@ -292,8 +341,9 @@ class MarkdownEditorOverlay(ScriptableObject):
 			ui.message(msg)
 
 	def _navigateCode(self, gesture, direction, name, notFoundMessage=None):
-		if not getattr(self, "markdownBrowseMode", False):
-			gesture.send()
+		if not self._isMarkdownBrowseActive():
+			if not self._hasActiveTreeInterceptor():
+				gesture.send()
 			return
 		with FastDocumentManager(self) as fdm:
 			self._navigateCodeFast(fdm, direction, name, notFoundMessage)
@@ -426,103 +476,252 @@ class MarkdownEditorOverlay(ScriptableObject):
 			)
 			ui.message(msg)
 
-	def _navigateTable(self, gesture, row_dir, col_dir):
-		if not getattr(self, "markdownBrowseMode", False):
-			gesture.send()
+	def isTableNavigationAvailable(self) -> bool:
+		"""Return whether Markdown table navigation is available at the caret."""
+		if not self._isMarkdownBrowseActive() or self._inNativeTable():
+			return False
+		try:
+			lineInfo = self.makeTextInfo(textInfos.POSITION_CARET)
+			lineInfo.expand(textInfos.UNIT_LINE)
+			return bool(patterns.RE_TABLE.match(lineInfo.text) and patterns.parseTableRow(lineInfo.text))
+		except (RuntimeError, NotImplementedError, LookupError, COMError, OSError, ValueError):
+			return False
+
+	def _getTableContext(self, fdm):
+		"""Return the table rows and current cell coordinates for a document manager."""
+		caretOffset = max(0, fdm.initialCaretOffset - fdm.getLineOffset())
+		return patterns.getTableContext(fdm.getText, fdm.nLines, fdm.lineIndex, caretOffset)
+
+	def _inNativeTable(self) -> bool:
+		"""Return whether NVDA reports the caret inside a native table."""
+		inTable = getattr(super(), "_inTable", None)
+		if inTable is None:
+			return False
+		try:
+			return inTable(self.makeTextInfo(textInfos.POSITION_CARET))
+		except (RuntimeError, NotImplementedError, LookupError, COMError, OSError, ValueError):
+			return False
+
+	def _fallbackTableScript(self, scriptName, gesture, sendGesture):
+		"""Run an underlying NVDA table script or optionally pass the gesture through."""
+		nativeTableScript = getattr(super(), f"script_{scriptName}", None)
+		if nativeTableScript is not None and self._inNativeTable():
+			nativeTableScript(gesture)
+		elif sendGesture:
+			try:
+				gesture.send()
+			except NotImplementedError:
+				pass
+
+	def _navigateTable(self, gesture, scriptName, rowOffset=0, columnOffset=0, toEdge=False):
+		"""Move to a Markdown table cell, or pass the gesture through outside browse mode."""
+		if self._hasActiveTreeInterceptor():
+			return
+		if not self._isMarkdownBrowseActive() or self._inNativeTable():
+			self._fallbackTableScript(scriptName, gesture, sendGesture=True)
 			return
 		with FastDocumentManager(self) as fdm:
-			self._navigateTableFast(fdm, row_dir, col_dir)
+			self._navigateTableFast(fdm, rowOffset, columnOffset, toEdge)
 
-	def _navigateTableFast(self, fdm, row_dir, col_dir):
-		isWeb = getattr(self.appModule, "appName", "").lower() in ("chrome", "msedge")
-
-		currentLineText = fdm.getText()
-		if not patterns.RE_TABLE.match(currentLineText):
+	def _navigateTableFast(self, fdm, rowOffset=0, columnOffset=0, toEdge=False):
+		"""Move to a Markdown table cell using a preloaded document."""
+		context = self._getTableContext(fdm)
+		if context is None:
+			# Translators: Message shown when a Markdown table command is used outside a table.
 			ui.message(_("Not inside a table"))
 			return
-
-		# 1. Parse current row (Logical Line)
-		# FastDocumentManager returns the full logical line, ignoring soft wraps.
-		cells = patterns.parseTableRow(currentLineText)
-		if not cells:
-			ui.message(_("Not inside a table"))
-			return
-
-		# Determine current column
-		# Need current caret offset relative to line start
-		lineStartOffset = fdm.getLineOffset()
-		caret_char_offset = fdm.initialCaretOffset - lineStartOffset
-		if caret_char_offset < 0:
-			caret_char_offset = 0
-
-		current_col = -1
-		for i, cell in enumerate(cells):
-			if caret_char_offset >= cell["start"] and caret_char_offset <= cell["end"]:
-				current_col = i
-				break
-		if current_col == -1:
-			current_col = 0
-
-		target_col = current_col
-
-		# Horizontal Move
-		if col_dir != 0:
-			target_col = current_col + col_dir
-			if target_col < 0 or target_col >= len(cells):
-				ui.message(_("Edge of table"))
-				return
-			target_cell = cells[target_col]
-
-			self._moveToTableCell(fdm, target_cell, isWeb)
-			return
-
-		# Vertical Move
-		if row_dir != 0:
-			while fdm.move(row_dir) != 0:
-				text = fdm.getText()
-				if not patterns.RE_TABLE.match(text):
-					break
-
-				new_cells = patterns.parseTableRow(text)
-				if not new_cells:
-					break
-
-				if target_col >= len(new_cells):
-					target_col = len(new_cells) - 1
-				target_cell = new_cells[target_col]
-
-				self._moveToTableCell(fdm, target_cell, isWeb)
-				return
-
+		target = patterns.getTableCellForMovement(context, rowOffset, columnOffset, toEdge)
+		if target is None:
+			# Translators: Message shown when table navigation reaches the table boundary.
 			ui.message(_("Edge of table"))
 			return
+		lineIndex, cell = target
+		self._moveToTableCell(fdm, lineIndex, cell)
 
-	def _moveToTableCell(self, fdm, target_cell, isWeb):
-		target_char_offset = target_cell["content_start"]
-		tiLine = fdm.getTextInfo()
+	def _getTableCellTextInfo(self, fdm, lineIndex, cell):
+		"""Return a TextInfo restricted to one Markdown table cell."""
+		return self._getCharacterRangeTextInfo(
+			fdm.getTextInfo(lineIndex),
+			fdm.getText(lineIndex),
+			cell["content_start"],
+			len(cell["text"]),
+		)
 
-		self._moveToCharacterRange(tiLine, fdm.getText(), target_char_offset, isWeb)
-		speech.speak([target_cell["text"]])
+	def _moveToTableCell(self, fdm, lineIndex, targetCell):
+		"""Move the caret to a Markdown table cell and speak its text."""
+		textInfo = self._getTableCellTextInfo(fdm, lineIndex, targetCell)
+		textInfo.collapse()
+		textInfo.updateCaret()
+		speech.speakMessage(targetCell["text"])
 
-	@script(gesture="kb:control+alt+leftArrow")
-	def script_prevTableCell(self, gesture):
-		self._navigateTable(gesture, 0, -1)
+	def _markdownTableSayAll(self, gesture, scriptName, axis, startAtFirst, updateCaret):
+		"""Read Markdown table cells along one axis using NVDA's table say-all."""
+		if self._hasActiveTreeInterceptor():
+			return
+		if not self._isMarkdownBrowseActive() or self._inNativeTable():
+			self._fallbackTableScript(scriptName, gesture, sendGesture=False)
+			return
+		with FastDocumentManager(self) as fdm:
+			context = self._getTableContext(fdm)
+			if context is None:
+				# Translators: Message shown when a Markdown table command is used outside a table.
+				ui.message(_("Not inside a table"))
+				return
+			rows, currentRow, currentColumn = context
+			if axis == "row":
+				lineIndex, cells = rows[currentRow]
+				startColumn = 0 if startAtFirst else currentColumn
+				selectedCells = [(lineIndex, cell) for cell in cells[startColumn:]]
+			elif axis == "column":
+				startRow = 0 if startAtFirst else currentRow
+				selectedCells = [
+					(lineIndex, cells[min(currentColumn, len(cells) - 1)])
+					for lineIndex, cells in rows[startRow:]
+				]
+			else:
+				raise ValueError(f"Unknown table axis {axis!r}")
 
-	@script(gesture="kb:control+alt+rightArrow")
-	def script_nextTableCell(self, gesture):
-		self._navigateTable(gesture, 0, 1)
+			def getBlankTextWithFields(_formatConfig=None):
+				"""Return NVDA's localized speech text for an empty table cell."""
+				# Translators: Spoken for an empty Markdown table cell.
+				return [builtins._("blank")]
 
-	@script(gesture="kb:control+alt+upArrow")
-	def script_tableRowUp(self, gesture):
-		self._navigateTable(gesture, -1, 0)
+			cellTextInfos = []
+			for lineIndex, cell in selectedCells:
+				cellTextInfo = self._getTableCellTextInfo(fdm, lineIndex, cell)
+				if not cell["text"]:
+					cellTextInfo.getTextWithFields = getBlankTextWithFields
+				cellTextInfos.append(cellTextInfo)
 
-	@script(gesture="kb:control+alt+downArrow")
-	def script_tableRowDown(self, gesture):
-		self._navigateTable(gesture, 1, 0)
+		remainingTextInfos = iter(cellTextInfos[1:])
+
+		def nextCell(_textInfo):
+			"""Return the next cell to NVDA's table say-all reader."""
+			return next(remainingTextInfos)
+
+		sayAll.SayAllHandler.readText(
+			sayAll.CURSOR.TABLE,
+			cellTextInfos[0],
+			nextCell,
+			updateCaret,
+			startedFromScript=True,
+		)
+
+	@script(
+		# Translators: Description for moving to the previous Markdown table column.
+		description=_("Moves to the previous table column"),
+		gesture="kb:control+alt+leftArrow",
+	)
+	def script_previousColumn(self, gesture):
+		"""Move to the previous Markdown table column."""
+		self._navigateTable(gesture, "previousColumn", columnOffset=-1)
+
+	@script(
+		# Translators: Description for moving to the next Markdown table column.
+		description=_("Moves to the next table column"),
+		gesture="kb:control+alt+rightArrow",
+	)
+	def script_nextColumn(self, gesture):
+		"""Move to the next Markdown table column."""
+		self._navigateTable(gesture, "nextColumn", columnOffset=1)
+
+	@script(
+		# Translators: Description for moving to the previous Markdown table row.
+		description=_("Moves to the previous table row"),
+		gesture="kb:control+alt+upArrow",
+	)
+	def script_previousRow(self, gesture):
+		"""Move to the previous Markdown table row."""
+		self._navigateTable(gesture, "previousRow", rowOffset=-1)
+
+	@script(
+		# Translators: Description for moving to the next Markdown table row.
+		description=_("Moves to the next table row"),
+		gesture="kb:control+alt+downArrow",
+	)
+	def script_nextRow(self, gesture):
+		"""Move to the next Markdown table row."""
+		self._navigateTable(gesture, "nextRow", rowOffset=1)
+
+	@script(
+		# Translators: Description for moving to the first Markdown table row.
+		description=_("Moves to the first table row"),
+		gesture="kb:control+alt+pageUp",
+	)
+	def script_firstRow(self, gesture):
+		"""Move to the first Markdown table row."""
+		self._navigateTable(gesture, "firstRow", rowOffset=-1, toEdge=True)
+
+	@script(
+		# Translators: Description for moving to the last Markdown table row.
+		description=_("Moves to the last table row"),
+		gesture="kb:control+alt+pageDown",
+	)
+	def script_lastRow(self, gesture):
+		"""Move to the last Markdown table row."""
+		self._navigateTable(gesture, "lastRow", rowOffset=1, toEdge=True)
+
+	@script(
+		# Translators: Description for moving to the first Markdown table column.
+		description=_("Moves to the first table column"),
+		gesture="kb:control+alt+home",
+	)
+	def script_firstColumn(self, gesture):
+		"""Move to the first Markdown table column."""
+		self._navigateTable(gesture, "firstColumn", columnOffset=-1, toEdge=True)
+
+	@script(
+		# Translators: Description for moving to the last Markdown table column.
+		description=_("Moves to the last table column"),
+		gesture="kb:control+alt+end",
+	)
+	def script_lastColumn(self, gesture):
+		"""Move to the last Markdown table column."""
+		self._navigateTable(gesture, "lastColumn", columnOffset=1, toEdge=True)
+
+	@script(
+		# Translators: Description for reading the current Markdown table row.
+		description=_("Reads the current row from left to right without moving the caret"),
+		gesture="kb:NVDA+control+alt+leftArrow",
+		speakOnDemand=True,
+	)
+	def script_speakRow(self, gesture):
+		"""Read the current Markdown table row without moving the caret."""
+		self._markdownTableSayAll(gesture, "speakRow", "row", startAtFirst=True, updateCaret=False)
+
+	@script(
+		# Translators: Description for reading the current Markdown table column.
+		description=_("Reads the current column from top to bottom without moving the caret"),
+		gesture="kb:NVDA+control+alt+upArrow",
+		speakOnDemand=True,
+	)
+	def script_speakColumn(self, gesture):
+		"""Read the current Markdown table column without moving the caret."""
+		self._markdownTableSayAll(gesture, "speakColumn", "column", startAtFirst=True, updateCaret=False)
+
+	@script(
+		# Translators: Description for reading rightwards from the current Markdown table cell.
+		description=_("Reads from the current cell to the end of the row"),
+		gesture="kb:NVDA+control+alt+rightArrow",
+		speakOnDemand=True,
+	)
+	def script_sayAllRow(self, gesture):
+		"""Read from the current Markdown table cell to the end of its row."""
+		self._markdownTableSayAll(gesture, "sayAllRow", "row", startAtFirst=False, updateCaret=True)
+
+	@script(
+		# Translators: Description for reading downwards from the current Markdown table cell.
+		description=_("Reads from the current cell to the end of the column"),
+		gesture="kb:NVDA+control+alt+downArrow",
+		speakOnDemand=True,
+	)
+	def script_sayAllColumn(self, gesture):
+		"""Read from the current Markdown table cell to the end of its column."""
+		self._markdownTableSayAll(gesture, "sayAllColumn", "column", startAtFirst=False, updateCaret=True)
 
 	def _find_block_boundary(self, direction):
-		if not getattr(self, "markdownBrowseMode", False):
-			return False
+		if not self._isMarkdownBrowseActive():
+			return self._hasActiveTreeInterceptor()
 
 		try:
 			with FastDocumentManager(self) as fdm:

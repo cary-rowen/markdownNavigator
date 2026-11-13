@@ -54,10 +54,19 @@ When the cursor is inside a Markdown table and Browse Mode is enabled, you can u
 *   **Ctrl + Alt + Right Arrow**: Next cell
 *   **Ctrl + Alt + Up Arrow**: Cell above
 *   **Ctrl + Alt + Down Arrow**: Cell below
+*   **Ctrl + Alt + Home**: First cell in the row
+*   **Ctrl + Alt + End**: Last cell in the row
+*   **Ctrl + Alt + Page Up**: First cell in the column
+*   **Ctrl + Alt + Page Down**: Last cell in the column
+*   **NVDA + Ctrl + Alt + Left Arrow**: Read the current row without moving the caret
+*   **NVDA + Ctrl + Alt + Up Arrow**: Read the current column without moving the caret
+*   **NVDA + Ctrl + Alt + Right Arrow**: Read from the current cell to the end of the row
+*   **NVDA + Ctrl + Alt + Down Arrow**: Read from the current cell to the end of the column
 
 ## Notes
 
 *   This add-on is specifically developed for Markdown editing scenarios. If you are reading an HTML page rendered by a browser, please use NVDA's built-in Browse Mode.
+*   NVDA's active Browse Mode and native HTML or Word table navigation take priority over Markdown navigation.
 *   If pressing the keys above types characters instead of navigating, please check if you have enabled Browse Mode by pressing `NVDA + Shift + Space`.
 *   In VS Code, due to the editor rendering content on demand (virtualization), this add-on's browse mode may not work as expected for content that is not currently visible/rendered.
 

@@ -206,7 +206,11 @@ class FastDocumentManager:
 						else self.utf16Offsets[-1]
 					)
 
-					if hasattr(self.obj, "IAccessibleTextObject"):
+					if (
+						hasattr(self.obj, "IAccessibleTextObject")
+						and self.obj.IAccessibleTextObject.nCharacters
+						== len(self.documentText.encode("utf-16-le")) // 2
+					):
 						# Create a flat IA2TextTextInfo
 						flatInfo = IA2TextTextInfo(self.obj, textInfos.POSITION_ALL)
 
@@ -223,7 +227,7 @@ class FastDocumentManager:
 						return flatInfo
 					else:
 						log.debugWarning(
-							"FastDocumentManager: Object missing IAccessibleTextObject, cannot use flat info",
+							"FastDocumentManager: Object does not expose one flat IA2 text buffer",
 						)
 
 				except Exception as e:
