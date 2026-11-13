@@ -6,6 +6,7 @@
 from __future__ import annotations
 import builtins
 import addonHandler
+import browseMode
 import controlTypes
 import textInfos
 import ui
@@ -21,12 +22,11 @@ from speech import sayAll
 from logHandler import log
 from baseObject import ScriptableObject
 from textInfos.offsets import Offsets, OffsetsTextInfo
-from textUtils import getOffsetConverter
 from . import patterns
 from _ctypes import COMError
 from NVDAObjects.IAccessible import IA2TextTextInfo
 
-from .document import FastDocumentManager
+from .document import FastDocumentManager, getLogicalLineUnit
 
 addonHandler.initTranslation()
 
@@ -42,7 +42,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 		gesture="kb:NVDA+shift+space",
 	)
 	def script_toggleMarkdownBrowseMode(self, gesture) -> None:
-		if self._hasActiveTreeInterceptor():
+		if self._hasActiveBrowseModeTreeInterceptor():
 			return
 		self.markdownBrowseMode = not self.markdownBrowseMode
 		self._reportBrowseModeState()
@@ -62,7 +62,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 	def getScript(self, gesture):
 		"""Handle browse mode specific gesture trapping."""
 		script = super().getScript(gesture)
-		if self._hasActiveTreeInterceptor():
+		if self._hasActiveBrowseModeTreeInterceptor():
 			scriptFunction = getattr(script, "__func__", script)
 			if MarkdownEditorOverlay.__dict__.get(getattr(scriptFunction, "__name__", "")) is scriptFunction:
 				return None
@@ -79,16 +79,20 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 		return None
 
-	def _hasActiveTreeInterceptor(self) -> bool:
-		"""Return whether a ready tree interceptor currently owns input."""
+	def _hasActiveBrowseModeTreeInterceptor(self) -> bool:
+		"""Return whether a ready Browse Mode tree interceptor currently owns input."""
 		treeInterceptor = getattr(self, "treeInterceptor", None)
 		return bool(
-			treeInterceptor and getattr(treeInterceptor, "isReady", False) and not treeInterceptor.passThrough
+			isinstance(treeInterceptor, browseMode.BrowseModeTreeInterceptor)
+			and getattr(treeInterceptor, "isReady", False)
+			and not treeInterceptor.passThrough
 		)
 
 	def _isMarkdownBrowseActive(self) -> bool:
 		"""Return whether Markdown browse commands should handle input."""
-		return bool(getattr(self, "markdownBrowseMode", False) and not self._hasActiveTreeInterceptor())
+		return bool(
+			getattr(self, "markdownBrowseMode", False) and not self._hasActiveBrowseModeTreeInterceptor()
+		)
 
 	def makeTextInfo(self, position):
 		"""Create TextInfo instances, including bookmarks from flat IA2 ranges."""
@@ -124,7 +128,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 		:param notFoundMessage: Custom message when element not found.
 		"""
 		if not self._isMarkdownBrowseActive():
-			if not self._hasActiveTreeInterceptor():
+			if not self._hasActiveBrowseModeTreeInterceptor():
 				gesture.send()
 			return
 		with FastDocumentManager(self) as fdm:
@@ -133,40 +137,19 @@ class MarkdownEditorOverlay(ScriptableObject):
 	def _moveToCharacterRange(
 		self,
 		textInfo: textInfos.TextInfo,
-		text: str,
 		charOffset: int,
-		isWeb: bool,
-		charLength: int = 0,
 	) -> None:
-		"""Move the caret to a Python character offset, using IA2 UTF-16 offsets for web editors."""
-		textInfo = self._getCharacterRangeTextInfo(
-			textInfo,
-			text,
-			charOffset,
-			charLength if isWeb else 0,
-		)
+		"""Move the caret to a Python character offset."""
+		textInfo = self._getCharacterRangeTextInfo(textInfo, charOffset)
 		textInfo.updateCaret()
 
 	def _getCharacterRangeTextInfo(
 		self,
 		textInfo: textInfos.TextInfo,
-		text: str,
 		charOffset: int,
 		charLength: int = 0,
 	) -> textInfos.TextInfo:
 		"""Return a TextInfo for a Python character range."""
-		if isinstance(textInfo, OffsetsTextInfo):
-			converter = getOffsetConverter(textInfo.encoding)(text)
-			startOffset, endOffset = converter.strToEncodedOffsets(
-				charOffset,
-				charOffset + charLength,
-			)
-			textInfo = textInfo.copy()
-			lineStartOffset = textInfo._startOffset
-			textInfo._startOffset = lineStartOffset + startOffset
-			textInfo._endOffset = lineStartOffset + endOffset
-			return textInfo
-
 		startInfo = textInfo.moveToCodepointOffset(charOffset)
 		if charLength:
 			endInfo = textInfo.moveToCodepointOffset(charOffset + charLength)
@@ -185,8 +168,6 @@ class MarkdownEditorOverlay(ScriptableObject):
 		if focus_element:
 			currentLineText = fdm.getText()
 			lineStartOffset = fdm.getLineOffset()
-			# Check if we can use Flat Injection (Web Optimization)
-			isWeb = getattr(self.appModule, "appName", "").lower() in ("chrome", "msedge")
 
 			# Calculate caret offset within current line
 			# Note: getLineOffset returns Python string offset
@@ -213,13 +194,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 			if target_match:
 				lineInfo = fdm.getTextInfo()
-				self._moveToCharacterRange(
-					lineInfo,
-					currentLineText,
-					target_match.start(),
-					isWeb,
-					len(target_match.group()),
-				)
+				self._moveToCharacterRange(lineInfo, target_match.start())
 				speech.speak([target_match.group()])
 				return
 
@@ -231,7 +206,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 					found = True
 					m = matches[0] if direction == 1 else matches[-1]
 					lineInfo = fdm.getTextInfo()
-					self._moveToCharacterRange(lineInfo, text, m.start(), isWeb, len(m.group()))
+					self._moveToCharacterRange(lineInfo, m.start())
 					speech.speak([m.group()])
 					break
 
@@ -277,7 +252,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 	) -> None:
 		"""Navigation for block elements (tables, code blocks, blockquotes, etc.)."""
 		if not self._isMarkdownBrowseActive():
-			if not self._hasActiveTreeInterceptor():
+			if not self._hasActiveBrowseModeTreeInterceptor():
 				gesture.send()
 			return
 		with FastDocumentManager(self) as fdm:
@@ -342,7 +317,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 	def _navigateCode(self, gesture, direction, name, notFoundMessage=None):
 		if not self._isMarkdownBrowseActive():
-			if not self._hasActiveTreeInterceptor():
+			if not self._hasActiveBrowseModeTreeInterceptor():
 				gesture.send()
 			return
 		with FastDocumentManager(self) as fdm:
@@ -350,8 +325,6 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 	def _navigateCodeFast(self, fdm, direction, name, notFoundMessage):
 		"""Implementing Code Block Navigation with FastDocumentManager"""
-		isWeb = getattr(self.appModule, "appName", "").lower() in ("chrome", "msedge")
-
 		currentLineText = fdm.getText()
 		fdm.getTextInfo()  # For fallback anchor
 
@@ -401,13 +374,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 			if target_match:
 				log.debug(f"MarkdownNavigator: Found Inline Code in current line at {target_match.start()}")
 				lineInfo = fdm.getTextInfo()
-				self._moveToCharacterRange(
-					lineInfo,
-					currentLineText,
-					target_match.start(),
-					isWeb,
-					len(target_match.group()),
-				)
+				self._moveToCharacterRange(lineInfo, target_match.start())
 				speech.speak([target_match.group()])
 				return
 
@@ -464,7 +431,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 					log.debug(f"MarkdownNavigator: Found Inline Code at {m.start()}")
 
 					lineInfo = fdm.getTextInfo()
-					self._moveToCharacterRange(lineInfo, text, m.start(), isWeb, len(m.group()))
+					self._moveToCharacterRange(lineInfo, m.start())
 					speech.speak([m.group()])
 					break
 
@@ -482,8 +449,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 			return False
 		try:
 			lineInfo = self.makeTextInfo(textInfos.POSITION_CARET)
-			lineInfo.expand(textInfos.UNIT_LINE)
-			return bool(patterns.RE_TABLE.match(lineInfo.text) and patterns.parseTableRow(lineInfo.text))
+			lineInfo.expand(getLogicalLineUnit(lineInfo))
+			lineText = lineInfo.text
+			if patterns.RE_TABLE.match(lineText) and patterns.parseTableRow(lineText):
+				return True
+			with FastDocumentManager(self) as fdm:
+				lineText = fdm.getText()
+			return bool(patterns.RE_TABLE.match(lineText) and patterns.parseTableRow(lineText))
 		except (RuntimeError, NotImplementedError, LookupError, COMError, OSError, ValueError):
 			return False
 
@@ -515,7 +487,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 	def _navigateTable(self, gesture, scriptName, rowOffset=0, columnOffset=0, toEdge=False):
 		"""Move to a Markdown table cell, or pass the gesture through outside browse mode."""
-		if self._hasActiveTreeInterceptor():
+		if self._hasActiveBrowseModeTreeInterceptor():
 			return
 		if not self._isMarkdownBrowseActive() or self._inNativeTable():
 			self._fallbackTableScript(scriptName, gesture, sendGesture=True)
@@ -542,7 +514,6 @@ class MarkdownEditorOverlay(ScriptableObject):
 		"""Return a TextInfo restricted to one Markdown table cell."""
 		return self._getCharacterRangeTextInfo(
 			fdm.getTextInfo(lineIndex),
-			fdm.getText(lineIndex),
 			cell["content_start"],
 			len(cell["text"]),
 		)
@@ -556,7 +527,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 	def _markdownTableSayAll(self, gesture, scriptName, axis, startAtFirst, updateCaret):
 		"""Read Markdown table cells along one axis using NVDA's table say-all."""
-		if self._hasActiveTreeInterceptor():
+		if self._hasActiveBrowseModeTreeInterceptor():
 			return
 		if not self._isMarkdownBrowseActive() or self._inNativeTable():
 			self._fallbackTableScript(scriptName, gesture, sendGesture=False)
@@ -721,7 +692,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 	def _find_block_boundary(self, direction):
 		if not self._isMarkdownBrowseActive():
-			return self._hasActiveTreeInterceptor()
+			return self._hasActiveBrowseModeTreeInterceptor()
 
 		try:
 			with FastDocumentManager(self) as fdm:

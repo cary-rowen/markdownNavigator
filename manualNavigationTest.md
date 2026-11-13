@@ -79,6 +79,8 @@ From CELL-B2:
 - NVDA+ctrl+alt+Right reads CELL-B2 through CELL-B4 and leaves the caret at CELL-B4.
 - NVDA+ctrl+alt+Down reads CELL-B2 and CELL-C2 and leaves the caret at CELL-C2.
 
+Enable word wrap and narrow the editor until the CELL-B row wraps visually. Repeat the CELL-B2 movements and reads; targets and spoken cells must remain unchanged.
+
 With Easy Table Navigator installed, assign its toggle command, enable its table layer on CELL-B2, and verify that plain arrows perform the same adjacent-cell movements. Home, End, PageUp, and PageDown should perform the same edge movements.
 
 While the Easy Table Navigator layer is still enabled, turn Markdown Browse Mode off. Plain arrows, Ctrl+arrows, Home, End, PageUp, and PageDown should return to the editor's normal caret commands and continue reporting caret movement.

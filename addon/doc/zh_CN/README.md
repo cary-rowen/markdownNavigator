@@ -56,11 +56,19 @@ Markdown Navigator 是一个 NVDA 插件，旨在提升编辑和阅读 Markdown 
 *   Ctrl + Alt + 右光标: 下一个单元格
 *   Ctrl + Alt + 上光标: 上一行同列
 *   Ctrl + Alt + 下光标: 下一行同列
-
+*   Ctrl + Alt + Home: 移动到当前行的第一个单元格
+*   Ctrl + Alt + End: 移动到当前行的最后一个单元格
+*   Ctrl + Alt + Page Up: 移动到当前列的第一个单元格
+*   Ctrl + Alt + Page Down: 移动到当前列的最后一个单元格
+*   NVDA + Ctrl + Alt + 左光标: 从左到右朗读当前行，但不移动光标
+*   NVDA + Ctrl + Alt + 上光标: 从上到下朗读当前列，但不移动光标
+*   NVDA + Ctrl + Alt + 右光标: 从当前单元格开始，朗读到当前行末尾
+*   NVDA + Ctrl + Alt + 下光标: 从当前单元格开始，朗读到当前列末尾
 
 ## 注意事项
 
 *   本插件专为 markdown 编辑场景而开发。如果你正在阅读浏览器渲染后的 HTML 页面，请使用 NVDA 的浏览模式。
+*   NVDA 的浏览模式以及 HTML 或 Word 中的原生表格导航优先于 Markdown 导航。
 *   如果按下上述按键是键入字符而不是位置跳转，请检查是否按下了 NVDA + Shift + Space 开启了浏览模式。
 *     在 VS Code 中，由于编辑区域一次性呈现的内容有限，该插件的浏览模式可能不符合预期。
 

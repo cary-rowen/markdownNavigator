@@ -13,30 +13,21 @@ without repeated IPC calls.
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-import re
 import bisect
 import textInfos
 from logHandler import log
 from _ctypes import COMError
 from textInfos.offsets import OffsetsTextInfo
+from textUtils import getOffsetConverter
 from appModules.devenv import VsWpfTextViewTextInfo
 from NVDAObjects.IAccessible import IA2TextTextInfo
 
 if TYPE_CHECKING:
 	from NVDAObjects import NVDAObject
 
-#: Regex pattern for locating line boundaries.
-NEWLINE_REGEX = re.compile(r"\r?\n|\r")
-
-
-def _getParagraphUnit(textInfo: textInfos.TextInfo) -> str:
+def getLogicalLineUnit(textInfo: textInfos.TextInfo) -> str:
 	"""Return the appropriate paragraph unit based on the control type."""
-	try:
-		if isinstance(textInfo, VsWpfTextViewTextInfo):
-			return textInfos.UNIT_LINE
-	except NameError:
-		pass
-	return textInfos.UNIT_PARAGRAPH
+	return textInfos.UNIT_LINE if isinstance(textInfo, VsWpfTextViewTextInfo) else textInfos.UNIT_PARAGRAPH
 
 
 class FastDocumentManager:
@@ -55,6 +46,8 @@ class FastDocumentManager:
 		self.documentText: str | None = None
 		self.pyOffsets: list[int] = []
 		self.utf16Offsets: list[int] = []
+		self.documentUtf16Length: int = 0
+		self._offsetConverter = None
 		self.lineIndex: int = 0
 		self.originalLineIndex: int = 0
 		self.nLines: int = 0
@@ -74,6 +67,8 @@ class FastDocumentManager:
 		pretext = self.originalCaret.copy()
 		pretext.setEndPoint(self.document, "startToStart")
 		self.documentText = self.document.text
+		if isinstance(self.document, OffsetsTextInfo):
+			self._offsetConverter = getOffsetConverter(self.document.encoding)(self.documentText)
 
 		# Calculate offsets: maintain both Python indices (for regex/slicing)
 		# and UTF-16 offsets (for TextInfo operations)
@@ -82,7 +77,7 @@ class FastDocumentManager:
 		currentUtf16 = 0
 		lastPy = 0
 
-		for m in NEWLINE_REGEX.finditer(self.documentText):
+		for m in textInfos.RE_EOL.finditer(self.documentText):
 			pyEnd = m.end()
 			chunk = self.documentText[lastPy:pyEnd]
 			# Calculate UTF-16 length
@@ -92,6 +87,7 @@ class FastDocumentManager:
 			self.pyOffsets.append(pyEnd)
 			self.utf16Offsets.append(currentUtf16)
 			lastPy = pyEnd
+		self.documentUtf16Length = currentUtf16 + len(self.documentText[lastPy:].encode("utf-16-le")) // 2
 
 		# Determine caret line using Python offsets
 		# Note: len(pretext.text) returns Python character count
@@ -147,47 +143,14 @@ class FastDocumentManager:
 			lineIndex = self.lineIndex
 
 		if isinstance(self.document, OffsetsTextInfo):
+			# moveToCodepointOffset would refetch the full document for every cell.
 			textInfo = self.document.copy()
-			offset = 0
-
-			# Try using textUtils to handle different encodings (e.g., Scintilla's UTF-8)
-			encoding = getattr(textInfo, "encoding", None)
-			if encoding:
-				from textUtils import getOffsetConverter
-
-				pyOffset = self.pyOffsets[lineIndex]
-				try:
-					converter = getOffsetConverter(encoding)(self.documentText)
-					# Note: strToEncodedOffsets returns tuple (start, end), we need start
-					offset = converter.strToEncodedOffsets(pyOffset)
-					if isinstance(offset, tuple):
-						offset = offset[0]
-				except Exception as e:
-					log.debugWarning(
-						f"FastDocumentManager: textUtils conversion failed ({e}), falling back to UTF-16",
-					)
-					# Fall back to precomputed UTF-16 offsets
-					if lineIndex < len(self.utf16Offsets):
-						offset = self.utf16Offsets[lineIndex]
-					else:
-						# Handle end-of-document case
-						lastKnownPy = self.pyOffsets[-1]
-						lastKnownUtf16 = self.utf16Offsets[-1]
-						remainingText = self.documentText[lastKnownPy:]
-						offset = lastKnownUtf16 + (len(remainingText.encode("utf-16-le")) // 2)
-			else:
-				# No specific encoding, default to Windows UTF-16
-				if lineIndex < len(self.utf16Offsets):
-					offset = self.utf16Offsets[lineIndex]
-				else:
-					# Handle end-of-document case
-					lastKnownPy = self.pyOffsets[-1]
-					lastKnownUtf16 = self.utf16Offsets[-1]
-					remainingText = self.documentText[lastKnownPy:]
-					offset = lastKnownUtf16 + (len(remainingText.encode("utf-16-le")) // 2)
-
-			textInfo._startOffset = textInfo._endOffset = offset
-			textInfo.expand(textInfos.UNIT_LINE)
+			startOffset = self.pyOffsets[lineIndex]
+			endOffset = self.pyOffsets[lineIndex + 1] if lineIndex + 1 < self.nLines else len(self.documentText)
+			textInfo._startOffset, textInfo._endOffset = self._offsetConverter.strToEncodedOffsets(
+				startOffset,
+				endOffset,
+			)
 			return textInfo
 		else:
 			# Fallback for non-OffsetsTextInfo
@@ -208,8 +171,7 @@ class FastDocumentManager:
 
 					if (
 						hasattr(self.obj, "IAccessibleTextObject")
-						and self.obj.IAccessibleTextObject.nCharacters
-						== len(self.documentText.encode("utf-16-le")) // 2
+						and self.obj.IAccessibleTextObject.nCharacters == self.documentUtf16Length
 					):
 						# Create a flat IA2TextTextInfo
 						flatInfo = IA2TextTextInfo(self.obj, textInfos.POSITION_ALL)
@@ -220,7 +182,7 @@ class FastDocumentManager:
 
 						# Expand to line for speech
 						try:
-							flatInfo.expand(textInfos.UNIT_LINE)
+							flatInfo.expand(getLogicalLineUnit(flatInfo))
 						except Exception as e:
 							log.debugWarning(f"FastDocumentManager: flatInfo.expand failed ({e})")
 
@@ -236,13 +198,13 @@ class FastDocumentManager:
 				# Fall through to paragraph movement if optimization fails
 
 			# Traditional line-by-line movement (Notepad, WordPad, etc.)
-			unit = _getParagraphUnit(self.document)
+			unit = getLogicalLineUnit(self.document)
 			delta = lineIndex - self.originalLineIndex
 			textInfo = self.originalCaret.copy()
 			textInfo.expand(unit)
 			textInfo.collapse()
 			textInfo.move(unit, delta)
-			textInfo.expand(textInfos.UNIT_LINE)
+			textInfo.expand(unit)
 			return textInfo
 
 	def updateCaret(self, lineIndex: int | None = None) -> textInfos.TextInfo:
