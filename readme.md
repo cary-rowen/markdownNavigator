@@ -76,4 +76,6 @@ When the cursor is inside a Markdown table and Browse Mode is enabled, you can u
 
 Run `uv sync` to install the build, translation, and lint tools. Python package discovery is limited to `addon` so template documentation does not interfere with dependency setup. Run `uv run prek run --all-files` for local checks and `uv run scons` to build (gettext is required). Build CI skips strict Pyright checking until the add-on is ready for it.
 
+For pushes to `main` or `master`, CI automatically commits fixes made by the existing checks after rerunning the checks and unit tests successfully, then builds the corrected files. The bot commit does not trigger another CI run. Pull requests and tag builds remain check-only; errors that cannot be fixed automatically still fail CI. Pull the latest changes before continuing local work if CI adds a formatting commit.
+
 Copyright (C) 2026 Cary-rowen <manchen_0528@outlook.com>
