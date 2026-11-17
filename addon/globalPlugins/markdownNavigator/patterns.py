@@ -4,6 +4,7 @@
 # This file is covered by the GNU General Public License.
 
 import re
+from collections.abc import Callable
 
 # Regex Definitions
 RE_HEADING = re.compile(r"^\s*#{1,6}\s")
@@ -27,6 +28,31 @@ RE_LATEX_MATH = re.compile(r"\$\$[\s\S]*?\$\$|(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$
 
 def getHeadingRegex(level):
 	return re.compile(r"^\s*#{%d}\s" % level)
+
+
+def getBlockBoundary(
+	getText: Callable[[int], str],
+	nLines: int,
+	lineIndex: int,
+	direction: int,
+) -> int | None:
+	"""Return the block start or the line after it; nLines denotes the document end."""
+	currentText = getText(lineIndex).expandtabs(4)
+	for regex in (RE_LIST_ITEM, RE_TABLE, RE_BLOCKQUOTE):
+		if regex.match(currentText):
+			break
+	else:
+		return None
+
+	indent = len(currentText) - len(currentText.lstrip(" "))
+	targetLine = lineIndex
+	for candidateLine in range(lineIndex + direction, nLines if direction > 0 else -1, direction):
+		text = getText(candidateLine).expandtabs(4)
+		candidateIndent = len(text) - len(text.lstrip(" "))
+		if not regex.match(text) or (regex is RE_LIST_ITEM and candidateIndent < indent):
+			return candidateLine if direction > 0 else targetLine
+		targetLine = candidateLine
+	return nLines if direction > 0 else targetLine
 
 
 def parseTableRow(text):

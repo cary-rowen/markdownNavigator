@@ -690,34 +690,23 @@ class MarkdownEditorOverlay(ScriptableObject):
 		"""Read from the current Markdown table cell to the end of its column."""
 		self._markdownTableSayAll(gesture, "sayAllColumn", "column", startAtFirst=False, updateCaret=True)
 
-	def _find_block_boundary(self, direction):
+	def _find_block_boundary(self, direction: int) -> bool:
+		"""Move to the current block's start or past its end and announce the destination."""
 		if not self._isMarkdownBrowseActive():
 			return self._hasActiveBrowseModeTreeInterceptor()
 
 		try:
 			with FastDocumentManager(self) as fdm:
-				currentLineText = fdm.getText()
-				matched_regex = None
-				BLOCK_PATTERNS = [patterns.RE_LIST_ITEM, patterns.RE_TABLE, patterns.RE_BLOCKQUOTE]
-				for regex in BLOCK_PATTERNS:
-					if regex.match(currentLineText):
-						matched_regex = regex
-						break
-
-				if not matched_regex:
+				targetLine = patterns.getBlockBoundary(fdm.getText, fdm.nLines, fdm.lineIndex, direction)
+				if targetLine is None:
+					# Translators: Reported when a block navigation command is used outside a supported block.
 					ui.message(_("Not inside a list, table, or blockquote"))
 					return True
 
-				last_matching_line = fdm.lineIndex
-
-				while fdm.move(direction) != 0:
-					text = fdm.getText()
-					if not matched_regex.match(text):
-						break
-					last_matching_line = fdm.lineIndex
-
-				# Move to the last matching line
-				lineInfo = fdm.updateCaret(last_matching_line)
+				lineInfo = fdm.getTextInfo(min(targetLine, fdm.nLines - 1))
+				caret = lineInfo.copy()
+				caret.collapse(end=targetLine == fdm.nLines)
+				caret.updateCaret()
 				speech.speakTextInfo(
 					lineInfo,
 					unit=textInfos.UNIT_LINE,
@@ -731,11 +720,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 	@script(gesture="kb:,")
 	def script_endOfElement(self, gesture):
+		"""Move past the current list, table, or blockquote."""
 		if not self._find_block_boundary(1):
 			gesture.send()
 
 	@script(gesture="kb:shift+,")
 	def script_startOfElement(self, gesture):
+		"""Move to the start of the current list, table, or blockquote."""
 		if not self._find_block_boundary(-1):
 			gesture.send()
 

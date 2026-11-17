@@ -42,9 +42,11 @@ Once the mode is enabled, you can use the following single-letter keys.
 | **E** | Emphasis | Italic/Emphasis text (`*` or `_`) |
 | **D** | Delete | Strikethrough text (`~~`) |
 | **F** | Footnote | Footnote reference `[^1]` |
-| **,** | End of Block | Jump to the end of the current block element |
+| **,** | After Block | Jump to the first line after the current list, table, or blockquote |
 | **Shift+,**| Start of Block | Jump to the start of the current block element |
 | **M** | Math | LaTeX math expression (`$...$` or `$$...$$`) |
+
+For nested lists, **,** and **Shift+,** use the current item's indentation to find the end or start of its list. Exiting a sublist lands on the next parent-level item (or the first line after the list). If the block reaches the end of the document, **,** moves to the end of the text. List blocks are recognized as consecutive lines with list markers; continuation paragraphs and blank lines within lists are not currently included.
 
 ### Table Cell Navigation
 
