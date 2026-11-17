@@ -85,13 +85,13 @@ class MarkdownEditorOverlay(ScriptableObject):
 		return bool(
 			isinstance(treeInterceptor, browseMode.BrowseModeTreeInterceptor)
 			and getattr(treeInterceptor, "isReady", False)
-			and not treeInterceptor.passThrough
+			and not treeInterceptor.passThrough,
 		)
 
 	def _isMarkdownBrowseActive(self) -> bool:
 		"""Return whether Markdown browse commands should handle input."""
 		return bool(
-			getattr(self, "markdownBrowseMode", False) and not self._hasActiveBrowseModeTreeInterceptor()
+			getattr(self, "markdownBrowseMode", False) and not self._hasActiveBrowseModeTreeInterceptor(),
 		)
 
 	def makeTextInfo(self, position):

@@ -25,6 +25,7 @@ from NVDAObjects.IAccessible import IA2TextTextInfo
 if TYPE_CHECKING:
 	from NVDAObjects import NVDAObject
 
+
 def getLogicalLineUnit(textInfo: textInfos.TextInfo) -> str:
 	"""Return the appropriate paragraph unit based on the control type."""
 	return textInfos.UNIT_LINE if isinstance(textInfo, VsWpfTextViewTextInfo) else textInfos.UNIT_PARAGRAPH
@@ -146,7 +147,9 @@ class FastDocumentManager:
 			# moveToCodepointOffset would refetch the full document for every cell.
 			textInfo = self.document.copy()
 			startOffset = self.pyOffsets[lineIndex]
-			endOffset = self.pyOffsets[lineIndex + 1] if lineIndex + 1 < self.nLines else len(self.documentText)
+			endOffset = (
+				self.pyOffsets[lineIndex + 1] if lineIndex + 1 < self.nLines else len(self.documentText)
+			)
 			textInfo._startOffset, textInfo._endOffset = self._offsetConverter.strToEncodedOffsets(
 				startOffset,
 				endOffset,
