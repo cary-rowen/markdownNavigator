@@ -53,6 +53,7 @@ class TestBlockNavigation(unittest.TestCase):
 	def test_deeper_lists_and_tabs(self) -> None:
 		"""Keep descendants inside a list and use Markdown's four-column tab stops."""
 		lines = ["1. parent", "\t- child", "        + grandchild", "    - sibling", "2. next"]
+		self.assertEqual(patterns.getListBlockStarts(lines.__getitem__, len(lines)), [0, 1, 2])
 		for start, direction, expected in ((1, 1, 4), (2, 1, 3), (3, -1, 1), (4, -1, 0)):
 			with self.subTest(start=start, direction=direction):
 				self.assertEqual(
@@ -83,7 +84,8 @@ class TestBlockNavigation(unittest.TestCase):
 		for start, direction, expected in ((0, 1, 6), (1, 1, 6), (3, -1, 0), (5, -1, 0), (4, -1, 4)):
 			with self.subTest(start=start, direction=direction):
 				self.assertEqual(
-					patterns.getBlockBoundary(lines.__getitem__, len(lines), start, direction), expected,
+					patterns.getBlockBoundary(lines.__getitem__, len(lines), start, direction),
+					expected,
 				)
 		lines = ["* Parent", "  * Child", "wrapped", "still wrapped", "* Next"]
 		self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 3, -1), 1)
@@ -96,10 +98,30 @@ class TestBlockNavigation(unittest.TestCase):
 			[patterns.isListBlockLine(lines.__getitem__, index) for index in range(len(lines))],
 			[True, True, True, False],
 		)
+		self.assertEqual(patterns.getListBlockStarts(lines.__getitem__, len(lines)), [0])
+
+	def test_list_navigation_includes_nested_blocks(self) -> None:
+		"""Expose nested lists as separate L navigation targets."""
+		lines = ["* ", "* item1", "  * subitem1", "*  item 2"]
+		self.assertEqual(patterns.getListBlockStarts(lines.__getitem__, len(lines)), [0, 2])
+
+		lines = ["* parent", "  * child", "* next", "  * child2"]
+		self.assertEqual(patterns.getListBlockStarts(lines.__getitem__, len(lines)), [0, 1, 3])
+
+	def test_list_navigation_ignores_fenced_code(self) -> None:
+		"""Do not treat list-like text inside fenced code as a Markdown list."""
+		for fence in ("```", "~~~"):
+			lines = [fence, "* code", fence, "* item"]
+			with self.subTest(fence=fence):
+				self.assertEqual(patterns.getListBlockStarts(lines.__getitem__, len(lines)), [3])
+				self.assertFalse(patterns.isListBlockLine(lines.__getitem__, 1))
+				self.assertIsNone(patterns.getBlockBoundary(lines.__getitem__, len(lines), 1, 1))
+		lines = ["```python", "```python", "* code", "```", "* item"]
+		self.assertEqual(patterns.getListBlockStarts(lines.__getitem__, len(lines)), [4])
 
 	def test_continuations_stop_at_block_boundaries(self) -> None:
 		"""Keep adjacent blocks and standalone prose outside the list in either direction."""
-		for boundary in ("", "# Heading", ">quote", "| a |", "```py", "~~~", "---", "* * *", "<div>"):
+		for boundary in ("", "# Heading", ">quote", "| a |", "---", "* * *", "<div>"):
 			lines = ["* First", "wrapped", boundary, "outside", "* Second"]
 			with self.subTest(boundary=boundary):
 				self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 0, 1), 2)

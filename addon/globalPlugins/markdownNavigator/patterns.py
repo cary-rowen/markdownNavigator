@@ -12,6 +12,7 @@ RE_LIST_ITEM = re.compile(r"^\s*([\*\-\+]|\d+\.)\s")
 RE_BLOCKQUOTE = re.compile(r"^\s*>\s")
 RE_TABLE = re.compile(r"^\s*\|")
 RE_CODE_BLOCK = re.compile(r"^\s*`{3,}")
+RE_CODE_FENCE = re.compile(r"^\s*(`{3,}|~{3,})(.*)$")
 RE_INLINE_CODE = re.compile(r"(?<!`)`[^`\n]+`(?!`)")
 # Non-greedy matching for inline elements
 # Negative lookbehind (?<!!) ensures we don't match images ![...]
@@ -102,6 +103,37 @@ def _classifyListLine(text: str) -> tuple[int | None, bool]:
 	)
 
 
+def _getCodeFence(text: str) -> str | None:
+	"""Return a Markdown code fence marker, if present."""
+	match = RE_CODE_FENCE.match(text)
+	return match.group(1) if match else None
+
+
+def _isClosingCodeFence(text: str, fence: str) -> bool:
+	"""Return whether text closes the given code fence."""
+	match = RE_CODE_FENCE.match(text)
+	return bool(
+		match
+		and not match.group(2).strip()
+		and match.group(1)[0] == fence[0]
+		and len(match.group(1)) >= len(fence),
+	)
+
+
+def _isInsideCodeFence(getText: Callable[[int], str], lineIndex: int) -> bool:
+	"""Return whether a line is inside a fenced code block."""
+	fence = None
+	for index in range(lineIndex):
+		marker = _getCodeFence(getText(index))
+		if marker is None:
+			continue
+		if fence is None:
+			fence = marker
+		elif _isClosingCodeFence(getText(index), fence):
+			fence = None
+	return fence is not None
+
+
 def _listItemForLine(getText: Callable[[int], str], lineIndex: int) -> tuple[int, int, bool] | None:
 	"""Find the owning marker and return its line, indentation and whether its paragraph can continue."""
 	for index in range(lineIndex, -1, -1):
@@ -115,7 +147,36 @@ def _listItemForLine(getText: Callable[[int], str], lineIndex: int) -> tuple[int
 
 def isListBlockLine(getText: Callable[[int], str], lineIndex: int) -> bool:
 	"""Return whether a line belongs to a list block, including a paragraph continuation."""
-	return _listItemForLine(getText, lineIndex) is not None
+	return not _isInsideCodeFence(getText, lineIndex) and _listItemForLine(getText, lineIndex) is not None
+
+
+def getListBlockStarts(getText: Callable[[int], str], nLines: int) -> list[int]:
+	"""Return the first line of each list block, including nested list blocks."""
+	starts = []
+	activeIndents = []
+	fence = None
+	for lineIndex in range(nLines):
+		marker = _getCodeFence(getText(lineIndex))
+		if fence is not None:
+			if marker and _isClosingCodeFence(getText(lineIndex), fence):
+				fence = None
+			activeIndents.clear()
+			continue
+		if marker:
+			fence = marker
+			activeIndents.clear()
+			continue
+		indent, paragraph = _classifyListLine(getText(lineIndex))
+		if indent is None:
+			if not paragraph:
+				activeIndents.clear()
+			continue
+		while activeIndents and indent < activeIndents[-1]:
+			activeIndents.pop()
+		if not activeIndents or indent > activeIndents[-1]:
+			activeIndents.append(indent)
+			starts.append(lineIndex)
+	return starts
 
 
 def getBlockBoundary(
@@ -125,6 +186,8 @@ def getBlockBoundary(
 	direction: int,
 ) -> int | None:
 	"""Return the block start or the line after it; nLines denotes the document end."""
+	if _isInsideCodeFence(getText, lineIndex):
+		return None
 	currentText = getText(lineIndex)
 	for regex in (RE_TABLE, RE_BLOCKQUOTE):
 		if regex.match(currentText):

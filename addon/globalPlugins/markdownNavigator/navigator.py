@@ -269,14 +269,28 @@ class MarkdownEditorOverlay(ScriptableObject):
 		name: str,
 		notFoundMessage: str | None,
 	) -> None:
-		isList = regex is patterns.RE_LIST_ITEM
+		if regex is patterns.RE_LIST_ITEM:
+			listStarts = patterns.getListBlockStarts(fdm.getText, fdm.nLines)
+			if direction == 1:
+				targetLine = next((line for line in listStarts if line > fdm.lineIndex), None)
+			else:
+				targetLine = next((line for line in reversed(listStarts) if line < fdm.lineIndex), None)
+			if targetLine is None:
+				ui.message(
+					notFoundMessage
+					or (_("no next %s found") % name if direction == 1 else _("no previous %s found") % name),
+				)
+				return
+			lineInfo = fdm.updateCaret(targetLine)
+			speech.speakTextInfo(
+				lineInfo,
+				unit=textInfos.UNIT_LINE,
+				reason=controlTypes.OutputReason.CARET,
+			)
+			return
 
 		def isMatch(lineIndex: int) -> bool:
-			return (
-				patterns.isListBlockLine(fdm.getText, lineIndex)
-				if isList
-				else bool(regex.match(fdm.getText(lineIndex)))
-			)
+			return bool(regex.match(fdm.getText(lineIndex)))
 
 		in_block = isMatch(fdm.lineIndex)
 		# When navigating backward while inside a block, first locate block start

@@ -30,7 +30,7 @@ Once the mode is enabled, you can use the following single-letter keys.
 | **H** | Heading | Any level heading (`#` to `######`) |
 | **1-6** | Heading 1-6 | Specific heading level |
 | **T** | Table | Start of a table |
-| **L** | List | Start of a list block |
+| **L** | List | Start of a list block, including nested lists |
 | **I** | List Item | Specific list item (`-`, `*`, `1.`) |
 | **Q** | Blockquote | Quote block (`>`) |
 | **C** | Code | Code block (```` ``` ````) or inline code (`` ` ``) |
