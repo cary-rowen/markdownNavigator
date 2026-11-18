@@ -24,10 +24,64 @@ RE_ITALIC = re.compile(r"(?<!\*)\*(?=[^\s*])(.+?)(?<=[^\s*])\*(?!\*)|(?<!_)_(?=[
 RE_STRIKETHROUGH = re.compile(r"(~~)(?=\S)(.+?)(?<=\S)\1")
 RE_FOOTNOTE = re.compile(r"\[\^.+?\](:)?")
 RE_LATEX_MATH = re.compile(r"\$\$[\s\S]*?\$\$|(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)")
+RE_HEADING_ANCHOR = re.compile(r"^\s*#{1,6}\s+.*?\s+\{#([^}\s]+)\}\s*$")
 
 
 def getHeadingRegex(level):
 	return re.compile(r"^\s*#{%d}\s" % level)
+
+
+def _findClosingDelimiter(text: str, opening: int, left: str, right: str) -> int | None:
+	"""Return the matching delimiter while ignoring escaped characters."""
+	depth = 0
+	index = opening
+	while index < len(text):
+		if text[index] == "\\":
+			index += 2
+			continue
+		if text[index] == left:
+			depth += 1
+		elif text[index] == right:
+			depth -= 1
+			if depth == 0:
+				return index
+		index += 1
+	return None
+
+
+def _getLinkDestination(text: str) -> str | None:
+	"""Extract an inline link destination from its parenthesized content."""
+	text = text.strip()
+	if text.startswith("<"):
+		end = text.find(">")
+		return text[1:end] if end > 0 else None
+	return text.split(None, 1)[0] if text else None
+
+
+def getMarkdownLinkAtOffset(text: str, offset: int) -> tuple[int, int, str] | None:
+	"""Return the inline link containing a character offset."""
+	for start, character in enumerate(text):
+		if character != "[" or (start > 0 and text[start - 1] == "!"):
+			continue
+		labelEnd = _findClosingDelimiter(text, start, "[", "]")
+		if labelEnd is None or labelEnd + 1 >= len(text) or text[labelEnd + 1] != "(":
+			continue
+		destinationEnd = _findClosingDelimiter(text, labelEnd + 1, "(", ")")
+		if destinationEnd is None:
+			continue
+		destination = _getLinkDestination(text[labelEnd + 2 : destinationEnd])
+		if destination is not None and start <= offset <= destinationEnd:
+			return start, destinationEnd, destination
+	return None
+
+
+def findHeadingAnchor(getText: Callable[[int], str], nLines: int, anchor: str) -> int | None:
+	"""Return the line containing an explicit Markdown heading anchor."""
+	for lineIndex in range(nLines):
+		match = RE_HEADING_ANCHOR.match(getText(lineIndex))
+		if match and match.group(1) == anchor:
+			return lineIndex
+	return None
 
 
 def _classifyListLine(text: str) -> tuple[int | None, bool]:

@@ -39,6 +39,7 @@ Markdown Navigator 是一个 NVDA 插件，旨在提升编辑和阅读 Markdown 
 | S | 分隔线 | 水平分割线 (---, ***) |
 | X | 复选框 | 任务列表项 (- [ ], - [x]) |
 | K | 链接 | Markdown 链接 [文本](链接) |
+| Space / Enter / Numpad Enter | 激活链接 | 跳转到文档内锚点或打开外部链接 |
 | G | 图片 (Graphic) | 图片标签 ![说明](链接) |
 | B | 粗体 (Bold) | 粗体文本 (** 或 __) |
 | E | 斜体 (Emphasis) | 斜体/强调文本 (* 或 _) |

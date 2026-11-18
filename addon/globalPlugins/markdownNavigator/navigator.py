@@ -14,6 +14,7 @@ import re
 import winsound
 import config
 import os
+from urllib.parse import unquote, urlparse
 import nvwave
 import globalVars
 from scriptHandler import script
@@ -774,6 +775,49 @@ class MarkdownEditorOverlay(ScriptableObject):
 			focus_element=True,
 			notFoundMessage=_("no previous link"),
 		)
+
+	@script(gestures=["kb:enter", "kb:numpadEnter", "kb:space"])
+	def script_activateMarkdownLink(self, gesture) -> None:
+		"""Follow the Markdown link at the caret or pass the gesture to the editor."""
+		if not self._isMarkdownBrowseActive():
+			gesture.send()
+			return
+		with FastDocumentManager(self) as fdm:
+			lineOffset = max(0, fdm.initialCaretOffset - fdm.getLineOffset())
+			link = patterns.getMarkdownLinkAtOffset(fdm.getText(), lineOffset)
+			if link is None:
+				gesture.send()
+				return
+			destination = link[2]
+			if destination.startswith("#"):
+				anchor = unquote(destination[1:])
+				targetLine = patterns.findHeadingAnchor(fdm.getText, fdm.nLines, anchor)
+				if targetLine is None:
+					# Translators: Message shown when a Markdown link target is missing.
+					ui.message(_("No heading found for this link"))
+					return
+				lineInfo = fdm.updateCaret(targetLine)
+				speech.speakTextInfo(
+					lineInfo,
+					unit=textInfos.UNIT_LINE,
+					reason=controlTypes.OutputReason.CARET,
+				)
+				return
+			# shortcut: Relative paths need the source document location, which editable controls do not expose consistently.
+			try:
+				parsed = urlparse(destination)
+			except ValueError:
+				gesture.send()
+				return
+			if parsed.scheme:
+				try:
+					os.startfile(destination)
+				except OSError:
+					log.error(f"MarkdownNavigator: Unable to open link {destination!r}", exc_info=True)
+					# Translators: Message shown when a Markdown link cannot be opened.
+					ui.message(_("Unable to open this link"))
+				return
+			gesture.send()
 
 	@script(gesture="kb:g")
 	def script_nextImage(self, gesture):
