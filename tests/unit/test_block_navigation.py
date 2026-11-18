@@ -89,6 +89,14 @@ class TestBlockNavigation(unittest.TestCase):
 		self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 3, -1), 1)
 		self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 2, 1), 4)
 
+	def test_list_navigation_groups_continuations(self) -> None:
+		"""Treat unindented paragraph continuations as part of the same list for L navigation."""
+		lines = ["* Item 1", "Continuation paragraph of item 1", "* Item 2", ""]
+		self.assertEqual(
+			[patterns.isListBlockLine(lines.__getitem__, index) for index in range(len(lines))],
+			[True, True, True, False],
+		)
+
 	def test_continuations_stop_at_block_boundaries(self) -> None:
 		"""Keep adjacent blocks and standalone prose outside the list in either direction."""
 		for boundary in ("", "# Heading", ">quote", "| a |", "```py", "~~~", "---", "* * *", "<div>"):

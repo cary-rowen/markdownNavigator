@@ -266,16 +266,24 @@ class MarkdownEditorOverlay(ScriptableObject):
 		name: str,
 		notFoundMessage: str | None,
 	) -> None:
-		currentLineText = fdm.getText()
-		in_block = bool(regex.match(currentLineText))
+		isList = regex is patterns.RE_LIST_ITEM
+
+		def isMatch(lineIndex: int) -> bool:
+			return (
+				patterns.isListBlockLine(fdm.getText, lineIndex)
+				if isList
+				else bool(regex.match(fdm.getText(lineIndex)))
+			)
+
+		in_block = isMatch(fdm.lineIndex)
 		# When navigating backward while inside a block, first locate block start
 		if direction == -1 and in_block:
 			prevLine = fdm.lineIndex - 1
-			if prevLine >= 0 and regex.match(fdm.getText(prevLine)):
+			if prevLine >= 0 and isMatch(prevLine):
 				# Find block start
 				startLine = fdm.lineIndex
 				while startLine > 0:
-					if not regex.match(fdm.getText(startLine - 1)):
+					if not isMatch(startLine - 1):
 						break
 					startLine -= 1
 				lineInfo = fdm.updateCaret(startLine)
@@ -288,8 +296,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 
 		found = False
 		while fdm.move(direction) != 0:
-			text = fdm.getText()
-			is_match = bool(regex.match(text))
+			is_match = isMatch(fdm.lineIndex)
 			if in_block:
 				if not is_match:
 					in_block = False
@@ -297,7 +304,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 				if is_match:
 					targetLine = fdm.lineIndex
 					if direction == -1:
-						while targetLine > 0 and regex.match(fdm.getText(targetLine - 1)):
+						while targetLine > 0 and isMatch(targetLine - 1):
 							targetLine -= 1
 					found = True
 					lineInfo = fdm.updateCaret(targetLine)

@@ -59,6 +59,11 @@ def _listItemForLine(getText: Callable[[int], str], lineIndex: int) -> tuple[int
 	return None
 
 
+def isListBlockLine(getText: Callable[[int], str], lineIndex: int) -> bool:
+	"""Return whether a line belongs to a list block, including a paragraph continuation."""
+	return _listItemForLine(getText, lineIndex) is not None
+
+
 def getBlockBoundary(
 	getText: Callable[[int], str],
 	nLines: int,
