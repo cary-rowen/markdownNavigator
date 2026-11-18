@@ -38,6 +38,12 @@ class TestLinkNavigation(unittest.TestCase):
 				self.assertIsNotNone(link)
 				self.assertEqual((link[2], link[3]), (destination, "site"))
 
+	def test_absolute_windows_path_with_spaces(self) -> None:
+		"""Keep a local absolute destination intact when it is enclosed in angle brackets."""
+		link = patterns.getMarkdownLinkAtOffset("[guide](<C:/docs/my guide.md>)", 1)
+		self.assertIsNotNone(link)
+		self.assertEqual(link[2], "C:/docs/my guide.md")
+
 	def test_images_and_malformed_links_are_ignored(self) -> None:
 		"""Avoid activating image syntax and incomplete links as ordinary links."""
 		self.assertIsNone(patterns.getMarkdownLinkAtOffset("![image](image.png)", 3))

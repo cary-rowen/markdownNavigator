@@ -811,7 +811,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 			except ValueError:
 				gesture.send()
 				return
-			if parsed.scheme:
+			if parsed.scheme or os.path.isabs(destination):
 				try:
 					os.startfile(destination)
 				except OSError:
