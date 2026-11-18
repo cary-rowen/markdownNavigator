@@ -69,6 +69,41 @@ class TestBlockNavigation(unittest.TestCase):
 				self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 2, -1), 1)
 				self.assertIsNone(patterns.getBlockBoundary(lines.__getitem__, len(lines), 0, 1))
 
+	def test_list_paragraph_continuations(self) -> None:
+		"""Navigate from both list items and their wrapped text at the correct nesting level."""
+		lines = [
+			"* Item 1.",
+			"Continuation 1.",
+			"* Item 2",
+			"Continuation 2.",
+			"  * Item 2.1",
+			"* Item 3",
+			"",
+		]
+		for start, direction, expected in ((0, 1, 6), (1, 1, 6), (3, -1, 0), (5, -1, 0), (4, -1, 4)):
+			with self.subTest(start=start, direction=direction):
+				self.assertEqual(
+					patterns.getBlockBoundary(lines.__getitem__, len(lines), start, direction), expected,
+				)
+		lines = ["* Parent", "  * Child", "wrapped", "still wrapped", "* Next"]
+		self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 3, -1), 1)
+		self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 2, 1), 4)
+
+	def test_continuations_stop_at_block_boundaries(self) -> None:
+		"""Keep adjacent blocks and standalone prose outside the list in either direction."""
+		for boundary in ("", "# Heading", ">quote", "| a |", "```py", "~~~", "---", "* * *", "<div>"):
+			lines = ["* First", "wrapped", boundary, "outside", "* Second"]
+			with self.subTest(boundary=boundary):
+				self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 0, 1), 2)
+				self.assertIsNone(patterns.getBlockBoundary(lines.__getitem__, len(lines), 3, 1))
+				self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 4, -1), 4)
+		for item in ("* \r\n", "* # Heading", "* ```py"):
+			lines = [item, "outside", "* Second"]
+			with self.subTest(item=item):
+				self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 0, 1), 1)
+				self.assertIsNone(patterns.getBlockBoundary(lines.__getitem__, len(lines), 1, 1))
+				self.assertEqual(patterns.getBlockBoundary(lines.__getitem__, len(lines), 2, -1), 2)
+
 	def test_document_end(self) -> None:
 		"""Distinguish a trailing empty line from a block ending without a newline."""
 		for lines in (["* item"], ["* item\r\n", ""]):
