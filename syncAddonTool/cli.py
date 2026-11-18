@@ -136,7 +136,7 @@ def main() -> None:
 		logger.info("Phase 3: Using local template directory: %s", templatePath)
 		if not os.path.exists(os.path.join(templatePath, "buildVars.py")):
 			logger.error(
-				"Provided template directory does not appear to be a valid NVDA AddonTemplate (missing buildVars.py)."
+				"Provided template directory does not appear to be a valid NVDA AddonTemplate (missing buildVars.py).",
 			)
 			if sys.stdin.isatty():
 				input("\nPress Enter to exit...")

@@ -22,7 +22,7 @@ FIXTURES_DIR: Path = Path(__file__).parent / "fixtures"
 
 
 def load_tests(
-	loader: unittest.TestLoader, tests: unittest.TestSuite, pattern: str | None
+	loader: unittest.TestLoader, tests: unittest.TestSuite, pattern: str | None,
 ) -> unittest.TestSuite:
 	"""Protocol function to override default unittest test loading order.
 
@@ -58,7 +58,7 @@ class TestSyncAddonTool(unittest.TestCase):
 			globalVars: dict
 			metadata, globalVars = extractBuildvarsMetadata(projBvPath)
 			status: str = mergeBuildvarsFile(
-				projBvPath, tplBvPath, metadata, globalVars, dryRun=False
+				projBvPath, tplBvPath, metadata, globalVars, dryRun=False,
 			)
 
 			self.assertEqual(status, "merged & structured (AST verified)")
@@ -279,7 +279,7 @@ class TestSyncAddonTool(unittest.TestCase):
 			)
 
 			status: str = mergePyprojectToml(
-				projToml, tplToml, metadataDict={}, dryRun=False
+				projToml, tplToml, metadataDict={}, dryRun=False,
 			)
 			self.assertEqual(status, "merged intelligently (tomlkit)")
 
@@ -300,7 +300,7 @@ class TestSyncAddonTool(unittest.TestCase):
 			tplToml.write_text(templateFixture.read_text(encoding="utf-8"), encoding="utf-8")
 
 			status: str = mergePyprojectToml(
-				projToml, tplToml, metadataDict={}, dryRun=False
+				projToml, tplToml, metadataDict={}, dryRun=False,
 			)
 			self.assertEqual(status, "merged intelligently (tomlkit)")
 
@@ -331,7 +331,7 @@ class TestSyncAddonTool(unittest.TestCase):
 			tplToml.write_text(templateFixture.read_text(encoding="utf-8"), encoding="utf-8")
 
 			status: str = mergePyprojectToml(
-				projToml, tplToml, metadataDict={}, dryRun=False
+				projToml, tplToml, metadataDict={}, dryRun=False,
 			)
 			self.assertEqual(status, "merged intelligently (tomlkit)")
 

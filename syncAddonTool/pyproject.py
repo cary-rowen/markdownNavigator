@@ -50,7 +50,7 @@ def createPyprojectFromTemplate(templateFilePath: Path, metadataDict: dict[str, 
 		projectSection["description"] = metadataDict["addon_summary"]
 
 	addonUrlText: str = str(
-		metadataDict.get("addon_sourceURL") or metadataDict.get("addon_url") or ""
+		metadataDict.get("addon_sourceURL") or metadataDict.get("addon_url") or "",
 	).strip()
 	if addonUrlText:
 		if "urls" not in projectSection:
@@ -444,7 +444,7 @@ def mergePyprojectToml(
 			fieldName: str
 			for fieldName in ["authors", "maintainers"]:
 				if fieldName in projTomlData["project"] and isinstance(
-					projTomlData["project"][fieldName], (list, MutableSequence)
+					projTomlData["project"][fieldName], (list, MutableSequence),
 				):
 					authorItem: Any
 					for authorItem in projTomlData["project"][fieldName]:
@@ -456,7 +456,7 @@ def mergePyprojectToml(
 							break
 
 		metadataRepositoryUrl: str = str(
-			metadataDict.get("addon_sourceURL") or metadataDict.get("addon_url") or ""
+			metadataDict.get("addon_sourceURL") or metadataDict.get("addon_url") or "",
 		).strip()
 		if metadataRepositoryUrl and "project" in projTomlData:
 			originalUrls: Any = projTomlData["project"].get("urls")
@@ -467,7 +467,7 @@ def mergePyprojectToml(
 				originalUrls["Repository"] = metadataRepositoryUrl
 
 		mergedDictData: dict[str, Any] = deepMergeDicts(
-			cast(dict[str, Any], projTomlData), cast(dict[str, Any], tplTomlData)
+			cast(dict[str, Any], projTomlData), cast(dict[str, Any], tplTomlData),
 		)
 		# Force requires-python synchronization from the template
 		if "project" in tplTomlData and "requires-python" in tplTomlData["project"]:
@@ -492,7 +492,7 @@ def mergePyprojectToml(
 				cleanupPlaceholderAuthors(projectSectionDict)
 
 			addonUrlText: str = str(
-				metadataDict.get("addon_sourceURL") or metadataDict.get("addon_url") or ""
+				metadataDict.get("addon_sourceURL") or metadataDict.get("addon_url") or "",
 			).strip()
 			if addonUrlText:
 				if "urls" not in projectSectionDict or not isinstance(projectSectionDict["urls"], MutableMapping):
