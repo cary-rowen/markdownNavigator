@@ -6,6 +6,7 @@
 
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -371,6 +372,8 @@ class TestSyncAddonToolE2E(unittest.TestCase):
 
 	def test_pyinstaller_executable_build(self) -> None:
 		"""Verify that the standalone executable can be successfully built using PyInstaller and uv."""
+		if sys.platform != "win32":
+			self.skipTest("The executable metadata and output are Windows-specific.")
 		specPath: Path = Path("syncAddonTool/syncAddonTool.spec")
 		if not specPath.exists():
 			self.skipTest("syncAddonTool/syncAddonTool.spec not found in repository.")
