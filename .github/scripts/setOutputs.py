@@ -10,7 +10,6 @@ import buildVars
 
 
 def main():
-	"""Write the add-on identifier to the GitHub Actions output file."""
 	addonId = buildVars.addon_info["addon_name"]
 	name = "addonId"
 	value = addonId

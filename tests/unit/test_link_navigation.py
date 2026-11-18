@@ -23,7 +23,7 @@ class TestLinkNavigation(unittest.TestCase):
 			with self.subTest(offset=offset):
 				self.assertEqual(
 					patterns.getMarkdownLinkAtOffset(text, offset),
-					(4, linkEnd, "#DocumentFormattingSettings"),
+					(4, linkEnd, "#DocumentFormattingSettings", "Document Formatting"),
 				)
 
 	def test_external_links_and_nested_parentheses(self) -> None:
@@ -36,7 +36,13 @@ class TestLinkNavigation(unittest.TestCase):
 			with self.subTest(text=text):
 				link = patterns.getMarkdownLinkAtOffset(text, 1)
 				self.assertIsNotNone(link)
-				self.assertEqual(link[2], destination)
+				self.assertEqual((link[2], link[3]), (destination, "site"))
+
+	def test_absolute_windows_path_with_spaces(self) -> None:
+		"""Keep a local absolute destination intact when it is enclosed in angle brackets."""
+		link = patterns.getMarkdownLinkAtOffset("[guide](<C:/docs/my guide.md>)", 1)
+		self.assertIsNotNone(link)
+		self.assertEqual(link[2], "C:/docs/my guide.md")
 
 	def test_images_and_malformed_links_are_ignored(self) -> None:
 		"""Avoid activating image syntax and incomplete links as ordinary links."""

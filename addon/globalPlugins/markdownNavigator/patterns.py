@@ -58,8 +58,8 @@ def _getLinkDestination(text: str) -> str | None:
 	return text.split(None, 1)[0] if text else None
 
 
-def getMarkdownLinkAtOffset(text: str, offset: int) -> tuple[int, int, str] | None:
-	"""Return the inline link containing a character offset."""
+def getMarkdownLinkAtOffset(text: str, offset: int) -> tuple[int, int, str, str] | None:
+	"""Return the inline link and label containing a character offset."""
 	for start, character in enumerate(text):
 		if character != "[" or (start > 0 and text[start - 1] == "!"):
 			continue
@@ -71,7 +71,7 @@ def getMarkdownLinkAtOffset(text: str, offset: int) -> tuple[int, int, str] | No
 			continue
 		destination = _getLinkDestination(text[labelEnd + 2 : destinationEnd])
 		if destination is not None and start <= offset <= destinationEnd:
-			return start, destinationEnd, destination
+			return start, destinationEnd, destination, text[start + 1 : labelEnd]
 	return None
 
 

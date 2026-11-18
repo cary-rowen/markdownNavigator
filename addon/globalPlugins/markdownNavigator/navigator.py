@@ -17,7 +17,7 @@ import os
 from urllib.parse import unquote, urlparse
 import nvwave
 import globalVars
-from scriptHandler import script
+from scriptHandler import getLastScriptRepeatCount, script
 import speech
 from speech import sayAll
 from logHandler import log
@@ -63,12 +63,14 @@ class MarkdownEditorOverlay(ScriptableObject):
 	def getScript(self, gesture):
 		"""Handle browse mode specific gesture trapping."""
 		script = super().getScript(gesture)
+		scriptFunction = getattr(script, "__func__", script)
 		if self._hasActiveBrowseModeTreeInterceptor():
-			scriptFunction = getattr(script, "__func__", script)
 			if MarkdownEditorOverlay.__dict__.get(getattr(scriptFunction, "__name__", "")) is scriptFunction:
 				return None
 			return script
 		if not self._isMarkdownBrowseActive():
+			if MarkdownEditorOverlay.__dict__.get("script_reportMarkdownLinkDestination") is scriptFunction:
+				return None
 			return script
 
 		if script:
@@ -809,7 +811,7 @@ class MarkdownEditorOverlay(ScriptableObject):
 			except ValueError:
 				gesture.send()
 				return
-			if parsed.scheme:
+			if parsed.scheme or os.path.isabs(destination):
 				try:
 					os.startfile(destination)
 				except OSError:
@@ -818,6 +820,45 @@ class MarkdownEditorOverlay(ScriptableObject):
 					ui.message(_("Unable to open this link"))
 				return
 			gesture.send()
+
+	@script(
+		# Translators: Input help description for reporting a Markdown link destination.
+		description=_(
+			"Reports the destination URL of the Markdown link at the caret. "
+			"If pressed twice, shows the URL in a window for easier review.",
+		),
+		gesture="kb:NVDA+k",
+		speakOnDemand=True,
+	)
+	def script_reportMarkdownLinkDestination(self, gesture) -> None:
+		"""Report the Markdown link destination at the caret or use NVDA's command."""
+		import globalCommands
+
+		if not self._isMarkdownBrowseActive():
+			globalCommands.commands.script_reportLinkDestination(gesture)
+			return
+		repeatCount = getLastScriptRepeatCount()
+		with FastDocumentManager(self) as fdm:
+			lineOffset = max(0, fdm.initialCaretOffset - fdm.getLineOffset())
+			link = patterns.getMarkdownLinkAtOffset(fdm.getText(), lineOffset)
+			if link is None:
+				if repeatCount < 2:
+					globalCommands.commands.script_reportLinkDestination(
+						gesture,
+						forceBrowseable=repeatCount == 1,
+					)
+				return
+			destination = link[2]
+			if repeatCount == 1:
+				# Translators: Title shown when displaying a Markdown link destination in a window.
+				ui.browseableMessage(
+					destination,
+					title=_("Destination of: {name}").format(name=link[3]),
+					closeButton=True,
+					copyButton=True,
+				)
+			elif repeatCount == 0:
+				ui.message(destination)
 
 	@script(gesture="kb:g")
 	def script_nextImage(self, gesture):
