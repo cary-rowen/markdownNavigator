@@ -38,6 +38,7 @@ Once the mode is enabled, you can use the following single-letter keys.
 | **X** | Checkbox | Task list item (`- [ ]`, `- [x]`) |
 | **K** | Link | Markdown link `[text](url)` |
 | **Space / Enter / Numpad Enter** | Activate link | Follow an internal anchor or open an external URL |
+| **NVDA+K** | Link destination | Report the destination URL of the Markdown link at the caret. Press twice to show the URL in a reviewable window |
 | **G** | Graphic | Image tag `![alt](url)` |
 | **B** | Bold | Bold text (`**` or `__`) |
 | **E** | Emphasis | Italic/Emphasis text (`*` or `_`) |
