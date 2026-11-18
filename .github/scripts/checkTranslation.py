@@ -117,7 +117,6 @@ def getScoreFromApi(fileNameToSearch: str, langId: str) -> float:
 
 
 def main():
-	"""Report translation progress for the requested file and language."""
 	if len(sys.argv) < 3:
 		print("Usage: python checkTranslation.py <filePath> <langId>")
 		sys.exit(2)

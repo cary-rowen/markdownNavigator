@@ -36,6 +36,7 @@ include = ["addon*"]
 build = [
 	"scons==4.10.1",
 	"Markdown==3.10",
+	"tomlkit==0.15.0",
 ]
 # Translations management
 l10n = [
@@ -48,7 +49,7 @@ l10n = [
 ]
 # Lint
 lint = [
-	"uv==0.11.15",
+	"uv==0.13.4",
 	"ruff==0.14.5",
 	"prek==0.4.8",
 	"pyright[nodejs]==1.1.407",
@@ -83,6 +84,7 @@ exclude = [
 	"__pycache__",
 	".venv",
 	"buildVars.py",
+	"syncAddonTool",
 	"tests",
 ]
 
@@ -122,6 +124,7 @@ exclude = [
 	".venv",
 	"site_scons",
 	".github/scripts",
+	"syncAddonTool",
 	"tests",
 	# When excluding concrete paths relative to a directory,
 	# not matching multiple folders by name e.g. `__pycache__`,
@@ -231,3 +234,6 @@ reportMissingTypeStubs = false
 
 # Bad rules
 # These are sorted alphabetically and should be enabled and moved to compliant rules section when resolved.
+
+[tool.setuptools]
+py-modules = []
