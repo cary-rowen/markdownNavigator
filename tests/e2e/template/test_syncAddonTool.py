@@ -386,6 +386,8 @@ class TestSyncAddonToolE2E(unittest.TestCase):
 				"run",
 				"--with",
 				"pyinstaller",
+				"--with",
+				"pefile",
 				"pyinstaller",
 				"syncAddonTool/syncAddonTool.spec",
 				"--noconfirm",
