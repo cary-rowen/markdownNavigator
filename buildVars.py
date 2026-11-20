@@ -22,19 +22,12 @@ addon_info = AddonInfo(
 	# Translators: Long description to be shown for this add-on on add-on information from add-on store
 	addon_description=_("""An NVDA add-on that provides structured navigation (headings, lists, tables, etc.) in editable text areas for Markdown files."""),
 	# version
-	addon_version="1.0.0",
+	addon_version="1.0.1",
 	# Brief changelog for this version
 	# Translators: what's new content for the add-on version to be shown in the add-on store
-addon_changelog=_("""### 1.0.0
+addon_changelog=_("""### 1.0.1
 
-- Added extended Markdown table navigation for the first and last rows and columns.
-- Added row and column reading commands, including reading from the current cell to the end of an axis.
-- Reused NVDA text navigation APIs so native table and editor behavior remains available.
-- Added a public integration hook for Easy Table Navigator in Markdown tables. (Once Easy Table Navigator PR #23 is merged, its arrow-key and edge-navigation commands will work with Markdown Navigator tables.)
-- Fixed list navigation across continuation paragraphs, nested lists, list boundaries, and documents without a trailing newline.
-- Added Markdown link activation with Space, Enter, and Numpad Enter, including internal anchor jumps and external URL opening.
-- Added NVDA+K support for reporting the destination of the Markdown link at the caret.
-- Added support for opening existing absolute local Markdown link targets.
+- Improved Markdown list navigation (L / Shift+L) to include nested lists, and ignored list-like content inside fenced code blocks (``` / ~~~) during list and block-boundary navigation.
 """),
 	# Author(s)
 	addon_author="cary-rowen <manchen_0528@outlook.com>",
