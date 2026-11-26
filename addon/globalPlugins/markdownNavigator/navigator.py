@@ -64,12 +64,19 @@ class MarkdownEditorOverlay(ScriptableObject):
 		"""Handle browse mode specific gesture trapping."""
 		script = super().getScript(gesture)
 		scriptFunction = getattr(script, "__func__", script)
+		isMarkdownScript = (
+			script is not None
+			and MarkdownEditorOverlay.__dict__.get(getattr(scriptFunction, "__name__", "")) is scriptFunction
+		)
 		if self._hasActiveBrowseModeTreeInterceptor():
-			if MarkdownEditorOverlay.__dict__.get(getattr(scriptFunction, "__name__", "")) is scriptFunction:
+			if isMarkdownScript:
 				return None
 			return script
 		if not self._isMarkdownBrowseActive():
-			if MarkdownEditorOverlay.__dict__.get("script_reportMarkdownLinkDestination") is scriptFunction:
+			if isMarkdownScript and (
+				gesture.isCharacter
+				or scriptFunction is MarkdownEditorOverlay.script_reportMarkdownLinkDestination
+			):
 				return None
 			return script
 
