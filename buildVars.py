@@ -22,12 +22,12 @@ addon_info = AddonInfo(
 	# Translators: Long description to be shown for this add-on on add-on information from add-on store
 	addon_description=_("""An NVDA add-on that provides structured navigation (headings, lists, tables, etc.) in editable text areas for Markdown files."""),
 	# version
-	addon_version="1.0.1",
+	addon_version="1.0.2",
 	# Brief changelog for this version
 	# Translators: what's new content for the add-on version to be shown in the add-on store
-addon_changelog=_("""### 1.0.1
+addon_changelog=_("""### 1.0.2
 
-- Improved Markdown list navigation (L / Shift+L) to include nested lists, and ignored list-like content inside fenced code blocks (``` / ~~~) during list and block-boundary navigation.
+- Fixed braille typing when Markdown Browse Mode is turned off.
 """),
 	# Author(s)
 	addon_author="cary-rowen <manchen_0528@outlook.com>",
